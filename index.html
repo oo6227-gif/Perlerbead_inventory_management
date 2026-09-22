@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.34</title>
+<title>비즈 사용량 관리 v1.0.35</title>
 
 <!-- TTF 폰트 정의 -->
 <style>
@@ -617,12 +617,12 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     <div class="card">
         <h3>📦 재고 설정</h3>
         <div style="margin:12px 0;">
-            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">보충 재고 원터치 이동 단위: <span id="lblTransferUnit">10</span>G</label>
+            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">보충 재고 원터치 이동 단위: <span id="lblTransferUnit">10</span> G</label>
             <input type="range" id="settingTransferUnit" min="10" max="50" step="10" value="10" oninput="document.getElementById('lblTransferUnit').innerText=this.value">
         </div>
 
         <div style="margin:12px 0;">
-            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">재고 알림 기준 수량: <span id="lblLowStockThreshold">300</span>개</label>
+            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">재고 알림 기준 수량: <span id="lblLowStockThreshold">300</span> 개</label>
             <input type="range" id="settingLowStockThreshold" min="100" max="500" step="50" value="300" oninput="document.getElementById('lblLowStockThreshold').innerText=this.value">
         </div>
 
@@ -774,11 +774,12 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.34 업데이트 내용]</b>
+            <b>[v1.0.35 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>클라우드 복원 시 입고 예정 재고(incomingInventory) 누락 현상 수정 (고유 ID 기준 병합 로직 보완)</li>
-                <li>모바일 도안 목록 카드 높이 및 비율 균일화 (height: 100% 적용)</li>
-                <li>모바일 화면 전용 재고 카드 컴팩트 형식(■ A2(100G) / ■ A2(1.2K개)) 적용</li>
+                <li>모바일 보충 가능 재고 카드 내 가위/박스 버튼 복원 및 2단 배치 적용</li>
+                <li>모바일 재고 카드 코드와 수량/중량 가독성 개선 (A2 300 개, A2 (10 G) 형식 적용)</li>
+                <li>1000개 이상 수량 K 단위 표기 적용 (1K 개, 1.2K 개)</li>
+                <li>모든 항목 내 숫자와 단위(개, G) 사이 띄어쓰기 적용</li>
             </ul>
         </div>
     </div>
@@ -819,7 +820,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.34";
+const APP_VERSION = "v1.0.35";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -1603,7 +1604,7 @@ function renderDesigns(){
         let designSize = d.size || "104X104";
         let wishBadge = d.isWish ? `<span class="badge-wish">위시리스트</span>` : '';
         
-        let summaryText = `사이즈: ${designSize}<br>총 비즈: ${totalQty.toLocaleString()}개<br>${colorCount}가지 색상`;
+        let summaryText = `사이즈: ${designSize}<br>총 비즈: ${totalQty.toLocaleString()} 개<br>${colorCount}가지 색상`;
 
         let imgHtml = d.image ? `
             <div onclick="openDesignDetailModal(${d.id})" style="margin-bottom:8px; text-align:center; background:var(--base-gray); height:110px; display:flex; align-items:center; justify-content:center; border-radius:6px; cursor:pointer;" title="클릭하여 상세 보기">
@@ -1681,7 +1682,7 @@ function openDesignDetailModal(id){
     document.getElementById("detailModalImage").innerHTML = d.image ? `<img src="${d.image}" style="max-width:100%; max-height:160px; object-fit:contain; border-radius:6px;">` : "";
     let totalQty = totalBeads(d);
     let authorDisplay = d.author ? `<br>작가 : <b>${d.author}</b>` : '';
-    document.getElementById("detailModalSummary").innerHTML = `도안 사이즈 : <b>${d.size || "104X104"}</b> ${d.isWish ? '| <span style="color:#D493A1;">위시리스트</span>' : ''}${authorDisplay}<br>전체 사용 비즈량 : 총 <b>${totalQty.toLocaleString()}개</b> (${d.colors.length}가지 색상)`;
+    document.getElementById("detailModalSummary").innerHTML = `도안 사이즈 : <b>${d.size || "104X104"}</b> ${d.isWish ? '| <span style="color:#D493A1;">위시리스트</span>' : ''}${authorDisplay}<br>전체 사용 비즈량 : 총 <b>${totalQty.toLocaleString()} 개</b> (${d.colors.length}가지 색상)`;
 
     let colorsHtml = "";
     d.colors.forEach(c => {
@@ -1689,7 +1690,7 @@ function openDesignDetailModal(id){
         colorsHtml += `
         <div style="display:flex; align-items:center; gap:8px; background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
             <div style="width:14px; height:14px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div>
-            <div style="font-size:11px; overflow:hidden;"><b>${c.code}</b> : ${c.qty.toLocaleString()}개</div>
+            <div style="font-size:11px; overflow:hidden;"><b>${c.code}</b> : ${c.qty.toLocaleString()} 개</div>
         </div>`;
     });
     document.getElementById("detailModalColors").innerHTML = colorsHtml;
@@ -1732,7 +1733,7 @@ function addSubstituteMappingRow(origVal = "", altVal = ""){
     let optionsHtml = `<option value="">-- 도안 색상 선택 --</option>`;
     selectedDesignForProd.colors.forEach(c => {
         let sel = c.code === origVal ? "selected" : "";
-        optionsHtml += `<option value="${c.code}" ${sel}>${c.code} (${c.qty}개)</option>`;
+        optionsHtml += `<option value="${c.code}" ${sel}>${c.code} (${c.qty} 개)</option>`;
     });
 
     let rowDiv = document.createElement("div");
@@ -1814,7 +1815,7 @@ function updateProductionStockCheck(){
         let missingHtml = "";
         missingList.forEach(m => {
             let hex = beadColors[m.code] || "#ccc";
-            missingHtml += `<div style="font-size:12px; margin-top:4px; display:flex; align-items:center; gap:6px;"><div style="width:12px; height:12px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div><b>${m.code}</b> : 약 ${m.count.toLocaleString()}개 부족</div>`;
+            missingHtml += `<div style="font-size:12px; margin-top:4px; display:flex; align-items:center; gap:6px;"><div style="width:12px; height:12px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div><b>${m.code}</b> : 약 ${m.count.toLocaleString()} 개 부족</div>`;
         });
         resHtml = `<span class="danger">✖ 재고가 부족하여 제작할 수 없습니다.</span><div style="margin-top:6px;">${missingHtml}</div>`;
     }
@@ -1991,7 +1992,7 @@ function renderMonthlyUsage(){
                     <div style="width:12px; height:12px; background:${beadColors[code] || "#ccc"}; border:1px solid #999; border-radius:3px;"></div>
                     <b style="font-size:12px;">${code}</b>
                 </div>
-                <div style="font-size:11px; color:var(--text-secondary); font-weight:bold;">${qty.toLocaleString()}개</div>
+                <div style="font-size:11px; color:var(--text-secondary); font-weight:bold;">${qty.toLocaleString()} 개</div>
             </div>`;
         });
         html += `</div>`;
@@ -2002,7 +2003,7 @@ function renderMonthlyUsage(){
     if(sortedEntries.length === 0){
         html = `<div style="color:var(--text-secondary); font-size:12px; text-align:center; padding:8px;">선택한 달에 사용된 비즈 내역이 없습니다.</div>`;
     } else {
-        html += `<hr style="margin:10px 0;"><span style="font-size:13px;"><b>총 사용량 : ${total.toLocaleString()}개</b></span>`;
+        html += `<hr style="margin:10px 0;"><span style="font-size:13px;"><b>총 사용량 : ${total.toLocaleString()} 개</b></span>`;
     }
     document.getElementById("monthlyUsage").innerHTML = html;
 }
@@ -2095,19 +2096,23 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
             if (isMobile) {
                 // 모바일 전용 컴팩트 카드 형식
                 if (isUnopened) {
-                    let mobileText = `${code}(${gram}G)`;
                     html += `
-                    <div onclick="customTransfer('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; padding:5px 6px; gap:6px; cursor:pointer;" title="클릭하여 이동">
-                        <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
-                        <span style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mobileText}</span>
+                    <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; padding:5px 4px; align-items:center; justify-content:center;">
+                        <div style="display:flex; align-items:center; gap:4px; margin-bottom:3px;">
+                            <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
+                            <span style="font-size:11px; font-weight:bold; white-space:nowrap;">${code} (${gram} G)</span>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
+                            <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
+                        </div>
                     </div>`;
                 } else {
-                    let countFormatted = count >= 1000 ? (count % 1000 === 0 ? (count/1000) + 'K개' : (count/1000).toFixed(1) + 'K개') : count + '개';
-                    let mobileText = `${code}(${countFormatted})`;
+                    let countFormatted = count >= 1000 ? (count % 1000 === 0 ? (count/1000) + 'K 개' : (count/1000).toFixed(1) + 'K 개') : count + ' 개';
                     html += `
-                    <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; padding:5px 6px; gap:6px; cursor:pointer;" title="클릭하여 수량 수정">
+                    <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; padding:6px; gap:4px; cursor:pointer;" title="클릭하여 수량 수정">
                         <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
-                        <span style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mobileText}</span>
+                        <span style="font-size:11px; font-weight:bold; white-space:nowrap;">${code} ${countFormatted}</span>
                     </div>`;
                 }
             } else {
@@ -2118,7 +2123,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
                         <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
                         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden;">
                             <b style="font-size:11px; line-height:1.2;">${code}</b>
-                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram}G</span>
+                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram} G</span>
                         </div>
                         <div style="display:flex; flex-direction:column; justify-content:center; gap:2px; padding:2px; border-left:1px solid var(--border-color); background:var(--card-bg);">
                             <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
@@ -2131,7 +2136,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
                         <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
                         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden; text-align:left;">
                             <b style="font-size:11px; line-height:1.2;">${code}</b>
-                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${count.toLocaleString()}개</span>
+                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${count.toLocaleString()} 개</span>
                         </div>
                     </div>`;
                 }
@@ -2156,7 +2161,7 @@ function renderIncomingInventory(){
             itemsHtml += `
             <div style="background:var(--base-gray); padding:4px 6px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:6px; font-size:11px;">
                 <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
-                <b>${code}</b> : ${gram}G
+                <b>${code}</b> : ${gram} G
             </div>`;
         });
         html += `
@@ -2188,12 +2193,12 @@ function quickTransfer(code, amount){
     if(unopenedInventory[code] <= 0) delete unopenedInventory[code];
     currentInventory[code] = (currentInventory[code] || 0) + amount;
     saveAll(); refreshAll();
-    alertCustom("성공", `[${code}] ${amount}G가 사용 가능한 재고로 이동되었습니다.`);
+    alertCustom("성공", `[${code}] ${amount} G가 사용 가능한 재고로 이동되었습니다.`);
 }
 
 function customTransfer(code){
     let max = unopenedInventory[code] || 0;
-    promptCustom("보충 가능 재고 이동", `[${code}] 이동할 그람수 입력 (최대 ${max}G):`, '10', function(val){
+    promptCustom("보충 가능 재고 이동", `[${code}] 이동할 그람수 입력 (최대 ${max} G):`, '10', function(val){
         if(val === null || val === "") return;
         let gram = Number(val);
         if(isNaN(gram) || gram <= 0 || gram > max){ alertCustom("알림", "올바른 값을 입력하세요."); return; }
@@ -2201,7 +2206,7 @@ function customTransfer(code){
         if(unopenedInventory[code] <= 0) delete unopenedInventory[code];
         currentInventory[code] = (currentInventory[code] || 0) + gram;
         saveAll(); refreshAll();
-        alertCustom("성공", `[${code}] ${gram}G가 사용 가능한 재고로 이동되었습니다.`);
+        alertCustom("성공", `[${code}] ${gram} G가 사용 가능한 재고로 이동되었습니다.`);
     });
 }
 
@@ -2220,9 +2225,9 @@ function renderAlerts(){
         let box = `<span style="display:inline-block; width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:3px; vertical-align:middle; margin-right:4px;"></span>`;
 
         if(count <= thresh){
-            dangerItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
+            dangerItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()} 개 남음</div>`);
         } else if(count <= thresh + 100){
-            warningItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
+            warningItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()} 개 남음</div>`);
         }
     });
 
@@ -2257,7 +2262,7 @@ function addCustomThreshold(){
 function renderCustomThresholds(){
     let html = "";
     Object.entries(settings.customThresholds).forEach(([code, val]) => {
-        html += `<div style="display:flex; justify-content:space-between; padding:3px 0; font-size:12px;"><span><b>${code}</b> : ${val}개 기준</span><button onclick="deleteCustomThresh('${code}')" style="width:auto; padding:2px 5px; font-size:10px; background:#ffcccc; color:red;">삭제</button></div>`;
+        html += `<div style="display:flex; justify-content:space-between; padding:3px 0; font-size:12px;"><span><b>${code}</b> : ${val} 개 기준</span><button onclick="deleteCustomThresh('${code}')" style="width:auto; padding:2px 5px; font-size:10px; background:#ffcccc; color:red;">삭제</button></div>`;
     });
     document.getElementById("customThresholdList").innerHTML = html || "설정된 개별 기준 수량이 없습니다.";
 }
@@ -2294,7 +2299,7 @@ function renderRestockHistory(){
     let html = "";
     restocks.slice().reverse().forEach((r,i) => {
         let typeLabel = r.type === 'unopened' ? '[보충 가능]' : '[사용 가능]';
-        html += `<div style="font-size:12px;">${new Date(r.date).toLocaleDateString()} &nbsp; ${typeLabel} &nbsp; <b>${r.code}</b> &nbsp; ${r.gram}G<hr style="margin:8px 0;"></div>`;
+        html += `<div style="font-size:12px;">${new Date(r.date).toLocaleDateString()} &nbsp; ${typeLabel} &nbsp; <b>${r.code}</b> &nbsp; ${r.gram} G<hr style="margin:8px 0;"></div>`;
     });
     document.getElementById("restockHistory").innerHTML = html || "<div style='font-size:12px; color:var(--text-secondary);'>입고 이력이 없습니다.</div>";
 }
