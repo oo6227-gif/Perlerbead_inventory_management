@@ -3,33 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.31</title>
+<title>비즈 사용량 관리 v1.0.32</title>
 
-<!-- 파이어베이스 SDK 설정 -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyBQnX9htrGID9VLEYfFzU80Pl2_m8Nw9-Y",
-    authDomain: "bead-manager-96.firebaseapp.com",
-    projectId: "bead-manager-96",
-    storageBucket: "bead-manager-96.firebasestorage.app",
-    messagingSenderId: "1069807957186",
-    appId: "1:1069807957186:web:adbbbedad5ec6d0ba6b75b",
-    measurementId: "G-K4Y8G1F51P"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.fbDB = db;
-  window.fbDoc = doc;
-  window.fbSetDoc = setDoc;
-  window.fbGetDoc = getDoc;
-</script>
-
+<!-- TTF 폰트 정의 -->
 <style>
+@font-face {
+    font-family: 'MyoeunDdobak';
+    src: url('./Griun_Myoeunddobak-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'MyoeunHeullim';
+    src: url('./Griun_MyoeunHeullim-Rg.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+}
+
 :root {
     --pastel-powder-blue: #C7DDF4;
     --pastel-periwinkle: #D0D6F7;
@@ -51,6 +41,8 @@
     --soft-pink: #FDF4F6;
     --deep-pink: #D493A1;
     --darkest-pink: #6B7280;
+    
+    --custom-font: Arial, sans-serif;
 }
 
 [data-theme="dark"] {
@@ -67,11 +59,15 @@
 
 html, body {
     overflow-x: hidden;
-    font-family: Arial, sans-serif;
+    font-family: var(--custom-font);
     margin: 0;
     background: var(--base-gray);
     color: var(--text-color);
     -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select, button {
+    font-family: var(--custom-font);
 }
 
 .header {
@@ -323,6 +319,30 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     margin-left: 4px;
 }
 </style>
+
+<!-- 파이어베이스 SDK 설정 -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQnX9htrGID9VLEYfFzU80Pl2_m8Nw9-Y",
+    authDomain: "bead-manager-96.firebaseapp.com",
+    projectId: "bead-manager-96",
+    storageBucket: "bead-manager-96.firebasestorage.app",
+    messagingSenderId: "1069807957186",
+    appId: "1:1069807957186:web:adbbbedad5ec6d0ba6b75b",
+    measurementId: "G-K4Y8G1F51P"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.fbDB = db;
+  window.fbDoc = doc;
+  window.fbSetDoc = setDoc;
+  window.fbGetDoc = getDoc;
+</script>
 </head>
 <body>
 
@@ -624,6 +644,15 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
             </select>
         </div>
 
+        <div style="margin:12px 0;">
+            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">화면 폰트 설정</label>
+            <select id="settingFontFamily" onchange="updateFontSetting()" style="font-size: 13px;">
+                <option value="system">시스템 설정에 따라</option>
+                <option value="ddobak">묘은 또박체</option>
+                <option value="heullim">묘은 흘림체</option>
+            </select>
+        </div>
+
         <hr style="margin:12px 0;">
         <h4 style="font-size:13px; margin:0 0 8px 0; color:var(--text-color);">재고 카테고리 메뉴 온오프 설정</h4>
         <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
@@ -742,13 +771,10 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.31 업데이트 내용]</b>
+            <b>[v1.0.32 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>월별 사용량 '기타 사용 색상' 영역 삭제 및 H1, H2, H7, E11 제외된 TOP 10 안내 문구 추가</li>
-                <li>사용 가능 및 보충 가능 재고 현황 카드를 1줄에 5개씩 표현되도록 촘촘하게 개편 (사용 가능은 수량 위주, 보충 가능은 G 위주)</li>
-                <li>'입고 예정 재고' 메뉴 부활 (주문날짜별 그룹 관리 및 택배 도착 시 보충 가능 재고로 일괄 이동)</li>
-                <li>설정 내 입고 예정 재고 온오프 기능 추가</li>
-                <li>재고 부족 알림에 (사용 가능 + 보충 가능 + 입고 예정) 총량 반영</li>
+                <li>깃허브에 추가된 TTF 폰트(묘은 또박체, 묘은 흘림체) 연동 적용</li>
+                <li>설정 화면 내 '화면 폰트 설정' 드롭박스 추가 (시스템 설정에 따라 / 묘은 또박체 / 묘은 흘림체 선택 가능)</li>
             </ul>
         </div>
     </div>
@@ -789,7 +815,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.31";
+const APP_VERSION = "v1.0.32";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -800,6 +826,7 @@ let incomingInventory = JSON.parse(localStorage.getItem("incomingInventory")) ||
 
 let settings = JSON.parse(localStorage.getItem("appSettings")) || {
     themeMode: 'system',
+    fontFamily: 'system',
     lowStockThreshold: 300,
     transferUnit: 10,
     catUnopened: true,
@@ -1229,8 +1256,26 @@ function updateThemeSetting(){
     }
 }
 
+function updateFontSetting(){
+    let fontVal = document.getElementById("settingFontFamily").value;
+    settings.fontFamily = fontVal;
+    applyFontSetting();
+}
+
+function applyFontSetting(){
+    let mode = settings.fontFamily || 'system';
+    let fontValue = "Arial, sans-serif";
+    if(mode === 'ddobak'){
+        fontValue = "'MyoeunDdobak', Arial, sans-serif";
+    } else if(mode === 'heullim'){
+        fontValue = "'MyoeunHeullim', Arial, sans-serif";
+    }
+    document.documentElement.style.setProperty('--custom-font', fontValue);
+}
+
 function loadSettingsToUI(){
     document.getElementById("settingThemeMode").value = settings.themeMode;
+    document.getElementById("settingFontFamily").value = settings.fontFamily || 'system';
     document.getElementById("settingLowStockThreshold").value = settings.lowStockThreshold;
     document.getElementById("lblLowStockThreshold").innerText = settings.lowStockThreshold;
     document.getElementById("settingTransferUnit").value = settings.transferUnit;
@@ -1238,18 +1283,21 @@ function loadSettingsToUI(){
     document.getElementById("catUnopened").checked = settings.catUnopened;
     document.getElementById("catIncoming").checked = settings.catIncoming;
     updateThemeSetting();
+    applyFontSetting();
     updateStockTabsVisibility();
     renderCustomThresholds();
 }
 
 function saveSettings(){
     settings.themeMode = document.getElementById("settingThemeMode").value;
+    settings.fontFamily = document.getElementById("settingFontFamily").value;
     settings.lowStockThreshold = Number(document.getElementById("settingLowStockThreshold").value);
     settings.transferUnit = Number(document.getElementById("settingTransferUnit").value);
     settings.catUnopened = document.getElementById("catUnopened").checked;
     settings.catIncoming = document.getElementById("catIncoming").checked;
     saveAll();
     updateThemeSetting();
+    applyFontSetting();
     updateStockTabsVisibility();
     alertCustom("설정", "설정이 저장되었습니다.");
 }
