@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>비즈 사용량 관리 v1.0.19</title>
+
+<!-- 파이어베이스 SDK 설정 -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+  import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBQnX9htrGID9VLEYfFzU80Pl2_m8Nw9-Y",
+    authDomain: "bead-manager-96.firebaseapp.com",
+    projectId: "bead-manager-96",
+    storageBucket: "bead-manager-96.firebasestorage.app",
+    messagingSenderId: "1069807957186",
+    appId: "1:1069807957186:web:adbbbedad5ec6d0ba6b75b",
+    measurementId: "G-K4Y8G1F51P"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.fbDB = db;
+  window.fbDoc = doc;
+  window.fbSetDoc = setDoc;
+  window.fbGetDoc = getDoc;
+</script>
+
+<style>
+:root {
+    --pastel-powder-blue: #C7DDF4;
+    --pastel-periwinkle: #D0D6F7;
+    --pastel-dusty-pink: #EEC4D1;
+    --pastel-rose-quartz: #F7D6E0;
+    --pastel-lavender: #E6D6F7;
+    --pastel-mint: #D7F0E6;
+    --pastel-butter: #FFE9A8;
+    --pastel-vanilla: #FFF7E0;
+    --pastel-greige: #E6E2DA;
+
+    --base-gray: #F8F9FC;
+    --card-bg: #FFFFFF;
+    --text-color: #3A404A;
+    --text-secondary: #7F8590;
+    --border-color: #E2E6ED;
+
+    --main-pink: #EEC4D1;
+    --soft-pink: #FDF4F6;
+    --deep-pink: #D493A1;
+    --darkest-pink: #6B7280;
+}
+
+[data-theme="dark"] {
+    --base-gray: #1A1A1A;
+    --card-bg: #242424;
+    --text-color: #E0E0E0;
+    --text-secondary: #AAAAAA;
+    --border-color: #3A3A3A;
+    --main-pink: #4A3B45;
+    --soft-pink: #2A2428;
+    --deep-pink: #EEC4D1;
+    --darkest-pink: #C7DDF4;
+}
+
+html, body {
+    overflow-x: hidden;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    background: var(--base-gray);
+    color: var(--text-color);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.header {
+    background: var(--pastel-periwinkle);
+    color: #3A404A;
+    padding: 15px;
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.tabs.mainTabs {
+    display: flex;
+    background: var(--card-bg);
+    border-bottom: 2px solid var(--border-color);
+    overflow-x: auto;
+    position: relative;
+    z-index: 50;
+}
+.tabs.mainTabs button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    background: var(--base-gray);
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: bold;
+    white-space: nowrap;
+    border-right: 1px solid var(--border-color);
+    touch-action: manipulation;
+    pointer-events: auto;
+}
+.tabs.mainTabs button.active {
+    background: var(--card-bg);
+    color: #4A5568;
+    border-bottom: 3px solid var(--pastel-powder-blue);
+}
+
+.sub-tabs-bar {
+    display: none;
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border-color);
+    padding: 8px 15px;
+    gap: 8px;
+    align-items: center;
+    overflow-x: auto;
+    position: relative;
+    z-index: 40;
+}
+.sub-tabs-bar button {
+    background: var(--base-gray);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: bold;
+    cursor: pointer;
+    white-space: nowrap;
+    width: auto;
+    touch-action: manipulation;
+    pointer-events: auto;
+}
+.sub-tabs-bar button.active {
+    background: var(--pastel-powder-blue);
+    color: #2C3748;
+    border-color: var(--pastel-powder-blue);
+}
+
+.page {
+    display: none;
+    padding: 15px;
+    max-width: 800px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 10;
+}
+.page.active { display: block; }
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(199,221,244,0.15);
+    position: relative;
+    z-index: 15;
+}
+
+input, textarea, select, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 5px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text-color);
+    font-size: 16px;
+}
+
+button {
+    background: var(--pastel-powder-blue);
+    color: #2C3748;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+    touch-action: manipulation;
+    pointer-events: auto;
+    position: relative;
+    z-index: 30;
+}
+button:active {
+    opacity: 0.7;
+}
+
+.warning { color: #d97706; font-weight: bold; }
+.danger { color: red; font-weight: bold; }
+.success { color: #16a34a; font-weight: bold; }
+hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
+
+.designSubPage, .searchPage, .stockPage { display: none; }
+.designSubPage.active, .searchPage.active, .stockPage.active { display: block; }
+
+.design-card {
+    border: 1px solid var(--border-color);
+    border-left: 5px solid var(--pastel-powder-blue);
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 10px;
+    margin-bottom: 15px;
+    background: var(--card-bg);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+}
+.design-card button { width: auto; }
+
+.buttonRow {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+}
+.buttonRow button { flex: 1; width: auto !important; }
+
+#designList, #historyList, #colorSearchResult {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.drawer-backdrop {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 998;
+}
+.drawer-menu {
+    position: fixed;
+    top: 0; right: -320px; width: 260px; height: 100%;
+    background: var(--card-bg);
+    border-left: 1px solid var(--border-color);
+    z-index: 999;
+    transition: right 0.3s ease;
+    box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    overflow-y: auto;
+}
+.drawer-menu.open { right: 0; }
+.drawer-item {
+    padding: 12px 10px;
+    cursor: pointer;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: bold;
+    color: var(--text-color);
+    font-size: 15px;
+    touch-action: manipulation;
+}
+.drawer-item:hover { background: var(--base-gray); }
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+.modal-content {
+    background: var(--card-bg);
+    color: var(--text-color);
+    width: min(500px, 92%);
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+.badge-wish {
+    background: var(--pastel-dusty-pink);
+    color: #4A3B45;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+    margin-left: 6px;
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div style="display:flex; align-items:center; gap:8px;">
+        <span onclick="goHome()" style="cursor:pointer; font-size:20px; padding:4px;" title="홈으로">🏠</span>
+        <span>비즈 사용량 관리</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:10px;">
+        <div id="versionBadge" onclick="openVersionInfo()" style="cursor:pointer; background:var(--pastel-lavender); color:#4A3B45; padding:6px 10px; border-radius:6px; font-size:11px; font-weight:bold;"></div>
+        <button id="hamburgerBtn" onclick="toggleDrawer(true)" style="display:none; width:auto; background:transparent; color:#3A404A; font-size:22px; padding:6px 10px; border:none; cursor:pointer;">☰</button>
+    </div>
+</div>
+
+<div class="drawer-backdrop" id="drawerBackdrop" onclick="toggleDrawer(false)"></div>
+<div class="drawer-menu" id="drawerMenu">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h3 style="margin:0; font-size:16px;">메뉴 이동</h3>
+        <button onclick="toggleDrawer(false)" style="width:auto; padding:8px 12px; background:transparent; color:var(--text-color);">✕</button>
+    </div>
+    <div class="drawer-item" onclick="openMainCategory('usage'); toggleDrawer(false);">📊 월별 사용량</div>
+    <div class="drawer-item" onclick="openMainCategory('designGroup'); toggleDrawer(false);">🎨 도안/제작 관리</div>
+    <div class="drawer-item" onclick="openMainCategory('stock'); toggleDrawer(false);">📦 재고/입고 관리</div>
+    <div class="drawer-item" onclick="openMainCategory('settings'); toggleDrawer(false);">⚙️ 설정</div>
+</div>
+
+<div class="tabs mainTabs" id="mainTabsContainer" style="display:none;">
+    <button onclick="openPage(event,'usage')">월별 사용량</button>
+    <button onclick="openPage(event,'designGroup')">도안/제작 관리</button>
+    <button onclick="openPage(event,'stock')">재고/입고 관리</button>
+    <button onclick="openPage(event,'settings')">설정</button>
+</div>
+
+<div class="sub-tabs-bar" id="designSubTabsBar">
+    <button class="subGroupTab active" onclick="openDesignSubTab('subGroupDesigns')">도안 관리</button>
+    <button class="subGroupTab" onclick="openDesignSubTab('subGroupHistory')">제작 이력</button>
+    <button class="subGroupTab" onclick="openDesignSubTab('subGroupSubstitute')">대체 색상</button>
+</div>
+
+<div class="sub-tabs-bar" id="stockSubTabsBar"></div>
+
+<div id="home" class="page active">
+    <div class="card" style="text-align:center; padding:30px 20px;">
+        <h2 style="color:#4A5568; margin-top:0; font-size:22px;">비즈 사용량 관리 홈</h2>
+        <p style="color:var(--text-secondary); font-size:14px; margin-bottom:25px;">원하시는 메뉴를 선택하여 관리하세요.</p>
+        
+        <div style="display:flex; flex-direction:column; gap:12px; max-width:400px; margin:0 auto 25px auto; position:relative; z-index:20;">
+            <button onclick="openPage(null, 'usage')" style="padding:16px; font-size:15px; background:var(--pastel-powder-blue);">📊 월별 사용량</button>
+            <button onclick="openPage(null, 'designGroup')" style="padding:16px; font-size:15px; background:var(--pastel-dusty-pink); color:#4A3B45;">🎨 도안/제작 관리</button>
+            <button onclick="openPage(null, 'stock')" style="padding:16px; font-size:15px; background:var(--pastel-lavender); color:#4A3B45;">📦 재고/입고 관리</button>
+            <button onclick="openPage(null, 'settings')" style="padding:16px; font-size:15px; background:var(--pastel-mint); color:#2C4A3E;">⚙️ 설정</button>
+        </div>
+
+        <hr style="margin:25px 0;">
+        <h3 style="font-size:14px; color:var(--text-color); margin-bottom:8px;">파일 백업 및 복원/병합</h3>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">파일 형태로 백업하거나 안전하게 복원/병합합니다.</div>
+        <div style="display:flex; gap:10px; max-width:400px; margin:0 auto; position:relative; z-index:20;">
+            <button onclick="exportData()" style="flex:1; background:var(--pastel-mint); color:#2C4A3E; padding:12px; border-radius:8px; font-size:13px;">파일 백업</button>
+            <button onclick="document.getElementById('importFile').click()" style="flex:1; background:var(--pastel-powder-blue); color:#2C3748; padding:12px; border-radius:8px; font-size:13px;">파일 복원 / 병합</button>
+            <input type="file" id="importFile" accept=".json" onchange="importData(event)" style="display:none;">
+        </div>
+
+        <hr style="margin:25px 0;">
+        <h3 style="font-size:14px; color:var(--text-color); margin-bottom:8px;">클라우드 백업 및 복원 (기기 간 연동)</h3>
+        <div style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">코드를 생성하여 다른 기기에서도 데이터를 그대로 불러옵니다.</div>
+        <div style="display:flex; gap:10px; max-width:400px; margin:0 auto; position:relative; z-index:20;">
+            <button onclick="uploadCloudBackup()" style="flex:1; background:var(--pastel-dusty-pink); color:#4A3B45; padding:12px; border-radius:8px; font-size:13px;">코드로 클라우드 백업</button>
+            <button onclick="openCloudRestoreModal()" style="flex:1; background:var(--pastel-lavender); color:#4A3B45; padding:12px; border-radius:8px; font-size:13px;">코드로 클라우드 복원</button>
+        </div>
+    </div>
+</div>
+
+<div id="usage" class="page">
+    <div class="card">
+        <h3>재고 보충 알림</h3>
+        <div id="stockAlert"></div>
+    </div>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+            <h3 style="margin:0;">월별 사용량</h3>
+            <input type="month" id="usageMonthPicker" onchange="renderMonthlyUsage()" style="width:150px; margin:0; padding:8px;">
+        </div>
+        <div id="monthlyUsage"></div>
+    </div>
+</div>
+
+<div id="designGroup" class="page">
+    <div id="subGroupDesigns" class="designSubPage active">
+        <div style="display:flex; gap:8px; margin-bottom:12px;">
+            <button class="designTab active" onclick="openDesignInnerTab('designSearch')" style="flex:1;">도안 검색</button>
+            <button class="designTab" onclick="openDesignInnerTab('designRegister'); window.editingDesignId=null; document.getElementById('designCardTitle').innerText='도안 등록'; document.getElementById('designName').value=''; document.getElementById('designSize').value='104X104'; document.getElementById('designColors').value=''; document.getElementById('designIsWish').checked=false;" style="flex:1; background:var(--base-gray); color:var(--text-secondary);">도안 등록</button>
+        </div>
+
+        <div id="designSearch" class="searchPage active">
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 style="margin:0;">도안 검색</h3>
+                    <select id="designSort" onchange="renderDesigns()" style="width:140px; margin:0;">
+                        <option value="default">등록순</option>
+                        <option value="name">이름순</option>
+                        <option value="most">비즈 많은 순</option>
+                        <option value="least">비즈 적은 순</option>
+                        <option value="wish">위시리스트만</option>
+                    </select>
+                </div>
+                <div style="display:flex; gap:8px; margin-bottom:12px;">
+                    <button class="searchTab active" onclick="openSearchTab(event,'nameSearch')" style="flex:1; padding:8px;">도안명 검색</button>
+                    <button class="searchTab" onclick="openSearchTab(event,'colorSearch')" style="flex:1; padding:8px; background:var(--base-gray); color:var(--text-secondary);">색상코드 검색</button>
+                </div>
+                <div id="nameSearch" class="searchPage active">
+                    <input id="searchDesign" onkeyup="renderDesigns()" placeholder="도안명 검색">
+                    <div id="designList"></div>
+                </div>
+                <div id="colorSearch" class="searchPage" style="display:none;">
+                    <input id="searchColorCode" placeholder="예: A1" onkeyup="searchDesignByColor()">
+                    <button onclick="searchDesignByColor()">검색</button>
+                    <div id="colorSearchResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="designRegister" class="searchPage" style="display:none;">
+            <div class="card">
+                <h3 id="designCardTitle">도안 등록</h3>
+                <input id="designName" placeholder="도안명">
+                <div style="margin: 10px 0;">
+                    <label style="font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 4px;">도안 사이즈</label>
+                    <select id="designSize"><option value="52X52">52X52</option><option value="104X104" selected>104X104</option><option value="208X208">208X208</option></select>
+                </div>
+                <div style="margin: 10px 0;">
+                    <label style="display:flex; align-items:center; gap:8px; font-weight:normal; font-size:13px;">
+                        <input type="checkbox" id="designIsWish" style="width:auto;"> 제작 예정 위시리스트로 등록
+                    </label>
+                </div>
+                <div style="margin: 10px 0;">
+                    <label style="font-size: 13px; color: var(--text-secondary); display: block; margin-bottom: 4px;">도안 이미지 첨부 (참고용 사진)</label>
+                    <input type="file" id="designImageFile" accept="image/*" style="padding: 10px;">
+                </div>
+                <textarea id="designColors" rows="10" placeholder="A1 120&#10;A5 80&#10;B3 45"></textarea>
+                <button onclick="saveDesign()">도안 저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="subGroupHistory" class="designSubPage" style="display:none;">
+        <div class="card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h3 style="margin:0;">제작 이력</h3>
+                <select id="historySort" onchange="renderHistory()" style="width:120px; margin:0;"><option value="new">등록순</option><option value="old">과거순</option></select>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <div id="subGroupSubstitute" class="designSubPage" style="display:none;">
+        <div class="card">
+            <div style="margin-bottom:15px; padding:10px; border-left:4px solid var(--pastel-powder-blue); background:var(--pastel-vanilla); font-size:13px; color:var(--text-secondary);">
+                ※ 대체 색상은 A ~ M 코드만 검색 가능합니다.
+            </div>
+            <h3>대체 색상 검색</h3>
+            <input id="subColor" placeholder="예: A1">
+            <button onclick="searchSubstitute()">검색</button>
+            <div id="subResult" style="margin-top:15px;"></div>
+        </div>
+    </div>
+</div>
+
+<div id="stock" class="page">
+    <div id="inventorySub" class="stockPage active">
+        <div class="card">
+            <h3>사용 가능한 재고 등록</h3>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">※ 현재 봉지를 뜯어 바로 사용할 수 있는 비즈 중량(G)을 적어주세요. (예: A1 50G) 1G=100개 환산</div>
+            <textarea id="inventoryText" rows="6" placeholder="A1 50G&#10;B2 120G&#10;H2 30G"></textarea>
+            <button onclick="registerInventory()">재고 등록</button>
+        </div>
+        <div class="card">
+            <h3>보충 필요 목록</h3>
+            <div id="purchaseList"></div>
+        </div>
+        <div class="card">
+            <h3>사용 가능한 재고 현황</h3>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">💡 색상을 클릭하여 즉시 수량을 수정하거나 삭제할 수 있습니다.</div>
+            <div id="currentInventoryList"></div>
+        </div>
+        <div class="card">
+            <h3>사용 가능한 재고 등록 이력</h3>
+            <div id="openInventoryLogList" style="max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;"></div>
+        </div>
+    </div>
+
+    <div id="unopenedSub" class="stockPage">
+        <div class="card">
+            <h3>보충 가능 재고 등록</h3>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:8px;">※ 구입해서 봉지 상태로 보관 중인 비즈 중량(G)을 적어주세요. (예: A1 100G)</div>
+            <textarea id="unopenedText" rows="6" placeholder="A1 100G&#10;B2 200G"></textarea>
+            <button onclick="registerUnopenedInventory()">재고 등록</button>
+        </div>
+        <div class="card">
+            <h3>보충 가능 재고 현황</h3>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">💡 ✂️ 가위 버튼은 설정된 단위만큼 원터치 이동, 📦 박스 버튼은 직접 그람수 입력 이동입니다.</div>
+            <div id="unopenedInventoryList"></div>
+        </div>
+        <div class="card">
+            <h3>보충 가능 재고 등록 이력</h3>
+            <div id="unopenedInventoryLogList" style="max-height:160px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; padding-right:4px;"></div>
+        </div>
+    </div>
+
+    <div id="restockSub" class="stockPage">
+        <div class="card">
+            <h3>입고 등록</h3>
+            <textarea id="restockText" rows="8" placeholder="A1 10G&#10;B2 50G"></textarea>
+            <div id="restockButtonRow" style="display:flex; gap:10px; margin-top:5px;">
+                <button onclick="registerRestock('open')" style="flex:1;">사용 가능한 재고</button>
+                <button id="btnRestockUnopened" onclick="registerRestock('unopened')" style="flex:1; background:var(--pastel-dusty-pink); color:#4A3B45;">보충 가능 재고</button>
+            </div>
+        </div>
+        <div class="card">
+            <h3>입고 이력</h3>
+            <div id="restockHistory"></div>
+        </div>
+    </div>
+</div>
+
+<div id="settings" class="page">
+    <div class="card">
+        <h3>📦 재고 설정</h3>
+        <div style="margin:15px 0;">
+            <label style="font-weight:bold; font-size:13px; display:block; margin-bottom:5px;">보충 재고 원터치 이동 단위: <span id="lblTransferUnit">10</span>G</label>
+            <input type="range" id="settingTransferUnit" min="10" max="50" step="10" value="10" oninput="document.getElementById('lblTransferUnit').innerText=this.value">
+        </div>
+
+        <div style="margin:15px 0;">
+            <label style="font-weight:bold; font-size:13px; display:block; margin-bottom:5px;">기본 재고 부족 임계값: <span id="lblLowStockThreshold">300</span>개</label>
+            <input type="range" id="settingLowStockThreshold" min="100" max="500" step="50" value="300" oninput="document.getElementById('lblLowStockThreshold').innerText=this.value">
+        </div>
+
+        <hr style="margin:15px 0;">
+        <h4 style="font-size:14px; margin:0 0 10px 0;">특정 색상코드별 개별 임계값 설정</h4>
+        <div style="display:flex; gap:10px; margin-top:8px;">
+            <input id="customColorCode" placeholder="코드 (예: H7)" style="width:30%;">
+            <input id="customColorThresh" type="number" placeholder="임계값(개)" style="width:50%;">
+            <button onclick="addCustomThreshold()" style="width:20%; padding:10px; background:var(--pastel-mint); color:#2C4A3E;">추가</button>
+        </div>
+        <div id="customThresholdList" style="margin-top:10px; font-size:13px;"></div>
+    </div>
+
+    <div class="card">
+        <h3>🖥️ 시스템 설정</h3>
+        <div style="margin:15px 0;">
+            <label style="font-weight:bold; font-size:13px; display:block; margin-bottom:5px;">화면 모드</label>
+            <select id="settingThemeMode" onchange="updateThemeSetting()">
+                <option value="system">시스템 설정 따르기</option>
+                <option value="light">라이트 모드</option>
+                <option value="dark">다크 모드</option>
+            </select>
+        </div>
+
+        <hr style="margin:15px 0;">
+        <h4 style="font-size:14px; margin:0 0 10px 0;">재고 카테고리 메뉴 온오프 설정</h4>
+        <div style="display:flex; flex-direction:column; gap:8px; font-size:13px;">
+            <label><input type="checkbox" id="catUnopened" style="width:auto;" checked> 보충 가능 재고</label>
+        </div>
+    </div>
+
+    <div class="card" style="border:1px solid #ffcccc; background:#fff5f5;">
+        <h3 style="color:red; margin-top:0;">⚠️ 데이터 초기화</h3>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:12px;">모든 도안, 이력, 재고 및 설정 데이터가 영구적으로 삭제됩니다.</p>
+        <button onclick="resetAllDataConfirm()" style="background:#ffcccc; color:red; padding:12px; font-weight:bold;">데이터 전체 초기화</button>
+    </div>
+
+    <button onclick="saveSettings()" style="margin-top:10px; padding:14px; font-size:15px; background:var(--pastel-powder-blue);">설정 저장</button>
+</div>
+
+<!-- 커스텀 클라우드 백업 코드 확인 모달 -->
+<div id="cloudBackupModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3 style="margin-top:0;">클라우드 백업 완료</h3>
+        <p style="font-size:13px; color:var(--text-secondary);">다른 기기에서 복원할 때 아래 백업 코드를 입력하세요.</p>
+        <div id="cloudGeneratedCode" style="font-size:24px; font-weight:bold; letter-spacing:4px; background:var(--pastel-vanilla); padding:15px; border-radius:8px; margin:15px 0; color:#4A5568;"></div>
+        <div style="font-size:12px; color:red; font-weight:bold; margin-bottom:15px;">⚠️ 이 백업 코드는 생성 후 7일 동안만 유효하며, 이후 자동 삭제됩니다.</div>
+        <div style="display:flex; gap:8px;">
+            <button onclick="downloadBackupCodeImage()" style="flex:1; background:var(--pastel-mint); color:#2C4A3E;">이미지로 저장</button>
+            <button onclick="closeCloudBackupModal()" style="flex:1;">확인</button>
+        </div>
+    </div>
+</div>
+
+<!-- 커스텀 클라우드 복원 코드 입력 모달 -->
+<div id="cloudRestoreModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">코드로 클라우드 복원</h3>
+        <p style="font-size:13px; color:var(--text-secondary);">발급받은 6자리 백업 코드를 입력하세요.</p>
+        <input id="cloudInputCode" placeholder="예: A7K9X2" style="text-transform:uppercase; text-align:center; font-size:18px; letter-spacing:2px; margin:10px 0;">
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button onclick="confirmCloudRestore()" style="flex:1;">복원하기</button>
+            <button onclick="closeCloudRestoreModal()" style="flex:1; background:#ccc; color:#333;">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- 도안 제작 모달 -->
+<div id="productionModal" class="modal">
+    <div class="modal-content">
+        <h3 id="modalDesignTitle" style="margin-top:0;">도안 제작</h3>
+        <div id="modalDesignImage" style="text-align:center; margin:10px 0;"></div>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:13px; font-weight:bold; color:var(--text-secondary);">제작 날짜</label>
+            <input type="date" id="modalProdDate" style="padding:10px;">
+        </div>
+        <div class="card" style="margin:10px 0; padding:10px; background:var(--pastel-vanilla);">
+            <h4 style="margin:0 0 8px 0; font-size:14px;">재고 확인 결과</h4>
+            <div id="modalStockCheckResult" style="font-size:13px; line-height:1.5;"></div>
+        </div>
+        <div style="margin: 10px 0;">
+            <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:bold;">
+                <input type="checkbox" id="modalUseSubstitute" onchange="toggleSubstituteArea()" style="width:auto;"> 대체 색상 사용 (수동 매핑)
+            </label>
+        </div>
+        
+        <!-- 수동 대체 색상 매핑 영역 -->
+        <div id="substituteMappingContainer" style="display:none; margin:10px 0; padding:12px; background:var(--base-gray); border-radius:8px; border:1px solid var(--border-color);">
+            <div style="font-size:13px; font-weight:bold; margin-bottom:8px; color:var(--text-color);">🔄 대체 색상 매핑 설정</div>
+            <div style="font-size:12px; color:var(--text-secondary); margin-bottom:10px;">부족한 도안 색상을 어떤 대체 색상으로 차감할지 선택하세요.</div>
+            <div id="substituteMappingRows" style="display:flex; flex-direction:column; gap:8px; margin-bottom:8px;"></div>
+            <button onclick="addSubstituteMappingRow('')" style="padding:8px; font-size:12px; background:var(--pastel-powder-blue); color:#2C3748;">+ 매핑 추가</button>
+        </div>
+
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button onclick="confirmProduction()" style="flex:1;">제작 완료 등록</button>
+            <button onclick="closeProductionModal()" style="flex:1; background:#ccc; color:#333;">취소</button>
+        </div>
+    </div>
+</div>
+
+<div id="editProductionModal" class="modal">
+    <div class="modal-content">
+        <h3 style="margin-top:0;">제작 이력 수정</h3>
+        <div id="editProdDesignName" style="font-weight:bold; margin-bottom:10px; color:var(--text-secondary);"></div>
+        <div style="margin-bottom:12px;">
+            <label style="font-size:13px; font-weight:bold; color:var(--text-secondary);">수정할 제작 날짜</label>
+            <input type="date" id="editProdDate" style="padding:10px;">
+        </div>
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button onclick="confirmEditProduction()" style="flex:1;">수정 완료</button>
+            <button onclick="closeEditProductionModal()" style="flex:1; background:#ccc; color:#333;">취소</button>
+        </div>
+    </div>
+</div>
+
+<div id="designDetailModal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <h3 id="detailModalTitle" style="margin:0;">도안 상세 정보</h3>
+            <button onclick="closeDesignDetailModal()" style="width:auto; padding:6px 12px; margin:0;">X</button>
+        </div>
+        <div id="detailModalImage" style="text-align:center; margin:10px 0;"></div>
+        <div id="detailModalSummary" style="font-weight:bold; color:#4A5568; background:var(--pastel-vanilla); padding:10px; border-radius:8px; margin-bottom:12px; text-align:center; font-size:14px;"></div>
+        <div style="font-size:13px; font-weight:bold; color:var(--text-secondary); margin-bottom:6px;">색상 코드별 상세 수량</div>
+        <div id="detailModalColors" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(130px, 1fr)); gap:8px; max-height:250px; overflow-y:auto; padding:4px;"></div>
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button onclick="openProductionModalFromDetail()" style="flex:1;">도안 제작하기</button>
+            <button onclick="closeDesignDetailModal()" style="flex:1; background:#ccc; color:#333;">닫기</button>
+        </div>
+    </div>
+</div>
+
+<div id="versionModal" class="modal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="margin:0; font-size:18px;">버전 정보</h3>
+            <button onclick="closeVersionInfo()" style="width:auto; padding:4px 10px;">X</button>
+        </div>
+        <hr style="margin:10px 0;">
+        <h4 style="margin:5px 0 10px 0; font-size:14px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
+        <div style="font-size:13px; line-height:1.6; color:var(--text-secondary);">
+            <b>[v1.0.19 업데이트 내용]</b>
+            <ul style="padding-left:18px; margin:5px 0 15px 0;">
+                <li>도안 제작 시 기존 색상(도안 색상 드롭박스) -> 대체 색상(수기 입력) 매핑 창 복원</li>
+                <li>대체 색상 매핑을 통한 유연한 재고 차감 로직 연동 완료</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- 공통 커스텀 알림 모달 -->
+<div id="customAlertModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3 id="customAlertTitle" style="margin-top:0;">알림</h3>
+        <p id="customAlertMessage" style="font-size:14px; color:var(--text-color); margin:15px 0; white-space:pre-line;"></p>
+        <button onclick="closeCustomAlert()" style="width:100%;">확인</button>
+    </div>
+</div>
+
+<!-- 공통 커스텀 확인(Confirm) 모달 -->
+<div id="customConfirmModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3 id="customConfirmTitle" style="margin-top:0;">확인</h3>
+        <p id="customConfirmMessage" style="font-size:14px; color:var(--text-color); margin:15px 0; white-space:pre-line;"></p>
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button id="customConfirmYesBtn" style="flex:1; background:var(--pastel-powder-blue); color:#2C3748;">확인</button>
+            <button onclick="closeCustomConfirm()" style="flex:1; background:#ccc; color:#333;">취소</button>
+        </div>
+    </div>
+</div>
+
+<!-- 공통 커스텀 입력(Prompt) 모달 -->
+<div id="customPromptModal" class="modal">
+    <div class="modal-content">
+        <h3 id="customPromptTitle" style="margin-top:0;">입력</h3>
+        <p id="customPromptMessage" style="font-size:14px; color:var(--text-color); margin:10px 0; white-space:pre-line;"></p>
+        <input id="customPromptInput" style="margin:10px 0;">
+        <div style="display:flex; gap:8px; margin-top:15px;">
+            <button id="customPromptYesBtn" style="flex:1; background:var(--pastel-powder-blue); color:#2C3748;">확인</button>
+            <button onclick="closeCustomPrompt()" style="flex:1; background:#ccc; color:#333;">취소</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const APP_VERSION = "v1.0.19";
+
+let designs = JSON.parse(localStorage.getItem("designs")) || [];
+let productions = JSON.parse(localStorage.getItem("productions")) || [];
+let restocks = JSON.parse(localStorage.getItem("restocks")) || [];
+let currentInventory = JSON.parse(localStorage.getItem("currentInventory")) || {};
+let unopenedInventory = JSON.parse(localStorage.getItem("unopenedInventory")) || {};
+let inventoryLogs = JSON.parse(localStorage.getItem("inventoryLogs")) || [];
+
+let settings = JSON.parse(localStorage.getItem("appSettings")) || {
+    themeMode: 'system',
+    lowStockThreshold: 300,
+    transferUnit: 10,
+    catUnopened: true,
+    customThresholds: {}
+};
+
+let selectedDesignForProd = null;
+let editingProductionId = null;
+let currentDetailDesignId = null;
+let pendingConfirmCallback = null;
+let pendingPromptCallback = null;
+
+let substituteData = `
+A1 = A2, A24, A15
+A2 = A1, A16, A24
+A3 = A16, A24, A15
+A4 = A15, A20, A25
+A5 = A20, A25, A26
+A6 = A13, A18, A7
+A7 = A6, A9, A12
+A8 = A4, A20, A25
+A9 = A12, A7, A18
+A10 = A14, A19, A9
+A11 = A17, A18, A23
+A12 = A9, A7, A19
+A13 = A6, A18, A25
+A14 = A19, A10, F2
+A15 = A4, A3, A16
+A16 = A3, A2, A1
+A17 = A11, A20, A25
+A18 = A13, A11, A6
+A19 = A14, A12, A10
+A20 = A4, A8, A25
+A21 = A17, A11, A25
+A22 = A24, A3, A5
+A23 = A11, G3, G2
+A24 = A3, A2, A1
+A25 = A20, A4, A8
+A26 = A5, A20, A25
+B1 = B3, B2, A4
+B2 = B4, B5, B3
+B3 = B1, B2, B4
+B4 = B2, B5, B3
+B5 = B4, B2, B14
+B6 = B12, B13, C1
+B7 = B15, B14, M3
+B8 = B10, B11, B9
+B9 = M3, M2, B8
+B10 = B11, B12, C2
+B11 = M2, M3, B9
+B12 = B13, B8, M3
+B13 = B3, B1, B10
+B14 = B3, B13, B1
+B15 = B9, M3, M2
+B16 = B13, B14, B10
+B17 = B16, B11, B14
+B18 = B1, B3, B14
+B19 = C16, C15, C17
+B20 = B10, B16, C2
+B21 = C17, C16, C18
+B22 = B6, B12, C5
+B23 = M3, B9, B15
+B24 = B13, B14, B3
+B25 = B15, B9, M3
+B26 = G3, G2, A23
+B27 = B16, B13, B10
+B28 = B3, B13, B14
+B29 = B1, B14, B18
+B30 = B13, B3, B1
+B31 = B13, B3, B14
+B32 = B3, B13, B10
+C1 = C2, B6, B10
+C2 = C3, C1, B10
+C3 = C2, C4, C10
+C4 = C5, C6, C3
+C5 = C4, C6, C18
+C6 = C4, C5, C18
+C7 = C19, C18, C20
+C8 = C9, C18, C19
+C9 = C7, C19, C20
+C10 = C3, C11, C12
+C11 = C10, C12, C2
+C12 = C13, C14, C29
+C13 = C3, C2, C10
+C14 = C13, C2, C1
+C15 = C16, C17, B21
+C16 = C17, C19, C18
+C17 = C11, C5, C4
+C18 = C12, C29, C19
+C19 = C16, C18, C7
+C20 = C7, C19, C16
+C21 = C13, C3, C2
+C22 = C10, C12, C11
+C23 = C13, C3, C21
+C24 = C3, C4, C13
+C25 = C10, C11, C2
+C26 = C10, C3, C4
+C27 = C13, C21, C14
+C28 = C13, C21, C23
+C29 = C12, C18, C16
+`;
+
+let beadColors = {
+"A1":"#FAF4C8","A2":"#FFFFD5","A3":"#FEFF88","A4":"#FBED56","A5":"#F4D738","A6":"#FEAC4C","A7":"#FE8B4C","A8":"#FFDA45","A9":"#FF995B","A10":"#F77C31","A11":"#FFDD99","A12":"#FE9F72","A13":"#FFC365","A14":"#FD543D","A15":"#FFF365","A16":"#FFFF9F","A17":"#FFE36E","A18":"#FEBE7D","A19":"#FD7C72","A20":"#FFD568","A21":"#FFE395","A22":"#F4F57D","A23":"#E6C987","A24":"#F7F8A2","A25":"#FFD67D","A26":"#FFC830",
+"B1":"#E6EE31","B2":"#63F347","B3":"#9EF780","B4":"#5DE035","B5":"#35E352","B6":"#65E2A6","B7":"#3DAF80","B8":"#1C9C4F","B9":"#27523A","B10":"#95D3C2","B11":"#5D722A","B12":"#166F41","B13":"#CAEB7B","B14":"#ADE946","B15":"#2E5132","B16":"#C6ED9C","B17":"#98B13A","B18":"#E6EE49","B19":"#24888C","B20":"#C2F0CC","B21":"#156A6B","B22":"#083C43","B23":"#303A21","B24":"#EEFCA5","B25":"#4E846D","B26":"#8D7A35","B27":"#CCE1AF","B28":"#9EE589","B29":"#C5E254","B30":"#E2FCB1","B31":"#B0E792","B32":"#9CAB5A",
+"C1":"#E8FFE7","C2":"#A9F9FC","C3":"#A0E2FB","C4":"#41CCFF","C5":"#01ACEB","C6":"#50AAF0","C7":"#3677D2","C8":"#0F54C0","C9":"#324BCA","C10":"#3EBCE2","C11":"#28DDDE","C12":"#1C334D","C13":"#CDE8FF","C14":"#D5FDFF","C15":"#22C4C6","C16":"#1557A8","C17":"#04D1F6","C18":"#1D3344","C19":"#1887A2","C20":"#176DAF","C21":"#BEDDFF","C22":"#67B4BE","C23":"#CBE2FF","C24":"#7CC4FF","C25":"#A9E5E5","C26":"#3CAED8","C27":"#D3DFFA","C28":"#BBCFED","C29":"#34488E",
+"D1":"#AEB4F2","D2":"#858EDD","D3":"#2F54AF","D4":"#182A84","D5":"#BB43C5","D6":"#AC7BDE",
+"E1":"#FDD3CC","E2":"#FECODF","E3":"#FFB7E7","E4":"#E8649E","E5":"#F551A2","E6":"#F13D74","E7":"#C63478","E8":"#FFDBE9","E9":"#E970CC","E10":"#D33793","E11":"#FCDDD2","E12":"#F78FC3","E13":"#B5006D","E14":"#FFD1BA","E15":"#F8C7C9","E16":"#FFF3EB","E17":"#FFE2EA","E18":"#FFC7DB","E19":"#FEBAD5","E20":"#D8C7D1","E21":"#BD9DA1","E22":"#B785A1","E23":"#937A8D","E24":"#E1BCE8",
+"F1":"#FD957B","F2":"#FC3D46","F3":"#F74941","F4":"#FC283C","F5":"#E7002F","F6":"#943630","F7":"#971937","F8":"#BC0028","F9":"#E2677A","F10":"#8A4526","F11":"#5A2121","F12":"#FD4E6A","F13":"#F35744","F14":"#FA9AD6","F15":"#D30022","F16":"#FCC2A6","F17":"#E69C79","F18":"#D37C46","F19":"#C1444A","F20":"#CD9391","F21":"#F7B4C6","F22":"#FDC0D0","F23":"#F67E66","F24":"#E698AA","F25":"#E54B4F",
+"G1":"#FFE2CE","G2":"#FFC4AA","G3":"#F4C3A5","G4":"#E18383","G5":"#EDB045","G6":"#E99C17","G7":"#D98C39","G8":"#753832","G9":"#E6B483","G10":"#D98C39","G11":"#E0C593","G12":"#FFC890","G13":"#B7714A","G14":"#8D614C","G15":"#FCF9E0","G16":"#F2D98A","G17":"#78524B","G18":"#FFE4CC","G19":"#E07935","G20":"#A94023","G21":"#B88558",
+"H1":"#FDFBFF","H2":"#FEFFFF","H3":"#8681BA","H4":"#B3B3B3","H5":"#474747","H6":"#2C2C2C","H7":"#000000","H8":"#E7D6DB","H9":"#E4E7E3","H10":"#EEE9EA","H11":"#CECDD5","H12":"#FFF5ED","H13":"#F3E1C9","H14":"#CFD7D3","H15":"#98A6A8","H16":"#3B2F23","H17":"#F1EDED","H18":"#FFFDF0","H19":"#F6EFE2","H20":"#949FA3","H21":"#F7F3E4","H22":"#CACAD5","H23":"#9A9D94",
+"M1":"#BCC688","M2":"#8AA386","M3":"#697D80","M4":"#E3D2BC","M5":"#D0CCAA"
+};
+
+let substitutes = {};
+substituteData.trim().split("\n").forEach(line => {
+    let [code, alt] = line.split("=");
+    if(code && alt) substitutes[code.trim()] = alt.split(",").map(x => x.trim());
+});
+
+function sortCodesNatural(codes) {
+    return codes.sort((a, b) => {
+        let prefixA = a.charAt(0);
+        let prefixB = b.charAt(0);
+        if (prefixA !== prefixB) return prefixA.localeCompare(prefixB);
+        let numA = parseInt(a.slice(1), 10);
+        let numB = parseInt(b.slice(1), 10);
+        return numA - numB;
+    });
+}
+
+function saveAll(){
+    localStorage.setItem("designs", JSON.stringify(designs));
+    localStorage.setItem("productions", JSON.stringify(productions));
+    localStorage.setItem("restocks", JSON.stringify(restocks));
+    localStorage.setItem("currentInventory", JSON.stringify(currentInventory));
+    localStorage.setItem("unopenedInventory", JSON.stringify(unopenedInventory));
+    localStorage.setItem("inventoryLogs", JSON.stringify(inventoryLogs));
+    localStorage.setItem("appSettings", JSON.stringify(settings));
+}
+
+function exportData(){
+    let data = { designs, productions, restocks, currentInventory, unopenedInventory, inventoryLogs, settings };
+    let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
+    let url = URL.createObjectURL(blob);
+    let a = document.createElement("a");
+    a.href = url;
+    a.download = `bead_backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+function alertCustom(title, message) {
+    document.getElementById("customAlertTitle").innerText = title;
+    document.getElementById("customAlertMessage").innerText = message;
+    document.getElementById("customAlertModal").style.display = "flex";
+}
+function closeCustomAlert() {
+    document.getElementById("customAlertModal").style.display = "none";
+}
+
+function confirmCustom(title, message, callback) {
+    document.getElementById("customConfirmTitle").innerText = title;
+    document.getElementById("customConfirmMessage").innerText = message;
+    pendingConfirmCallback = callback;
+    document.getElementById("customConfirmModal").style.display = "flex";
+}
+function closeCustomConfirm() {
+    document.getElementById("customConfirmModal").style.display = "none";
+    pendingConfirmCallback = null;
+}
+document.getElementById("customConfirmYesBtn").onclick = function() {
+    if(pendingConfirmCallback) pendingConfirmCallback();
+    closeCustomConfirm();
+};
+
+function promptCustom(title, message, defaultValue, callback) {
+    document.getElementById("customPromptTitle").innerText = title;
+    document.getElementById("customPromptMessage").innerText = message;
+    let inputEl = document.getElementById("customPromptInput");
+    inputEl.value = defaultValue || "";
+    pendingPromptCallback = callback;
+    document.getElementById("customPromptModal").style.display = "flex";
+    setTimeout(() => inputEl.focus(), 100);
+}
+function closeCustomPrompt() {
+    document.getElementById("customPromptModal").style.display = "none";
+    pendingPromptCallback = null;
+}
+document.getElementById("customPromptYesBtn").onclick = function() {
+    let val = document.getElementById("customPromptInput").value;
+    if(pendingPromptCallback) pendingPromptCallback(val);
+    closeCustomPrompt();
+};
+
+async function uploadCloudBackup() {
+    if (!window.fbDB) {
+        alertCustom("오류", "Firebase가 연결되지 않았습니다.");
+        return;
+    }
+    const randomCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    
+    const backupData = {
+        designs: JSON.parse(localStorage.getItem("designs")) || [],
+        productions: JSON.parse(localStorage.getItem("productions")) || [],
+        restocks: JSON.parse(localStorage.getItem("restocks")) || [],
+        currentInventory: JSON.parse(localStorage.getItem("currentInventory")) || {},
+        unopenedInventory: JSON.parse(localStorage.getItem("unopenedInventory")) || {},
+        inventoryLogs: JSON.parse(localStorage.getItem("inventoryLogs")) || [],
+        settings: JSON.parse(localStorage.getItem("appSettings")) || {},
+        updatedAt: new Date().toISOString(),
+        expiresAt: expiresAt
+    };
+    try {
+        await window.fbSetDoc(window.fbDoc(window.fbDB, "backups", randomCode), backupData);
+        document.getElementById("cloudGeneratedCode").innerText = randomCode;
+        document.getElementById("cloudBackupModal").style.display = "flex";
+    } catch (error) {
+        console.error(error);
+        alertCustom("클라우드 백업 오류", error.message);
+    }
+}
+
+function closeCloudBackupModal() {
+    document.getElementById("cloudBackupModal").style.display = "none";
+}
+
+function downloadBackupCodeImage() {
+    let code = document.getElementById("cloudGeneratedCode").innerText;
+    if(!code) return;
+    let canvas = document.createElement("canvas");
+    canvas.width = 400;
+    canvas.height = 220;
+    let ctx = canvas.getContext("2d");
+    
+    ctx.fillStyle = "#FFF7E0";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#C7DDF4";
+    ctx.lineWidth = 4;
+    ctx.strokeRect(0, 0, canvas.width, canvas.height);
+    
+    ctx.fillStyle = "#3A404A";
+    ctx.font = "bold 16px Arial";
+    ctx.textAlign = "center";
+    ctx.fillText("비즈 사용량 관리 클라우드 백업 코드", canvas.width / 2, 40);
+    
+    ctx.font = "bold 32px Arial";
+    ctx.fillStyle = "#4A5568";
+    ctx.fillText(code, canvas.width / 2, 105);
+    
+    ctx.font = "bold 12px Arial";
+    ctx.fillStyle = "red";
+    ctx.fillText("⚠️ 생성 후 7일 동안만 유효합니다.", canvas.width / 2, 155);
+    
+    ctx.font = "11px Arial";
+    ctx.fillStyle = "#7F8590";
+    ctx.fillText("다른 기기에서 복원 시 이 코드를 입력하세요.", canvas.width / 2, 185);
+    
+    let link = document.createElement("a");
+    link.download = `bead_backup_${code}.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+}
+
+function openCloudRestoreModal() {
+    document.getElementById("cloudInputCode").value = "";
+    document.getElementById("cloudRestoreModal").style.display = "flex";
+}
+
+function closeCloudRestoreModal() {
+    document.getElementById("cloudRestoreModal").style.display = "none";
+}
+
+async function confirmCloudRestore() {
+    if (!window.fbDB) {
+        alertCustom("오류", "Firebase가 연결되지 않았습니다.");
+        return;
+    }
+    const inputCode = document.getElementById("cloudInputCode").value.trim().toUpperCase();
+    if(!inputCode) {
+        alertCustom("알림", "백업 코드를 입력해주세요.");
+        return;
+    }
+
+    try {
+        const docSnap = await window.fbGetDoc(window.fbDoc(window.fbDB, "backups", inputCode));
+        if (!docSnap.exists()) {
+            alertCustom("오류", "존재하지 않거나 잘못된 백업 코드입니다.");
+            return;
+        }
+        
+        const data = docSnap.data();
+        if (data.expiresAt && new Date() > new Date(data.expiresAt)) {
+            alertCustom("만료된 코드", "이 백업 코드는 생성 후 7일이 경과하여 만료되었습니다.\n새로운 백업 코드를 생성해 주세요.");
+            return;
+        }
+
+        confirmCustom("클라우드 복원", "해당 클라우드 백업 데이터로 기기의 데이터를 교체하시겠습니까?", () => {
+            if(data.designs) localStorage.setItem("designs", JSON.stringify(data.designs));
+            if(data.productions) localStorage.setItem("productions", JSON.stringify(data.productions));
+            if(data.restocks) localStorage.setItem("restocks", JSON.stringify(data.restocks));
+            if(data.currentInventory) localStorage.setItem("currentInventory", JSON.stringify(data.currentInventory));
+            if(data.unopenedInventory) localStorage.setItem("unopenedInventory", JSON.stringify(data.unopenedInventory));
+            if(data.inventoryLogs) localStorage.setItem("inventoryLogs", JSON.stringify(data.inventoryLogs));
+            if(data.settings) localStorage.setItem("appSettings", JSON.stringify(data.settings));
+
+            alertCustom("성공", "성공적으로 복원되었습니다! 확인을 누르면 앱이 새로고침됩니다.");
+            setTimeout(() => location.reload(), 1500);
+        });
+    } catch (error) {
+        console.error(error);
+        alertCustom("클라우드 복원 오류", error.message);
+    }
+}
+
+function importData(event){
+    let file = event.target.files[0];
+    if(!file) return;
+    
+    let reader = new FileReader();
+    reader.onload = function(e){
+        try {
+            let data = JSON.parse(e.target.result);
+            confirmCustom("데이터 복원/병합", "데이터를 어떻게 처리하시겠습니까?\n\n[확인] : 기존 데이터와 병합하기\n[취소] : 기존 데이터를 교체하기", () => {
+                if(data.designs) {
+                    let designMap = new Map();
+                    designs.forEach(d => designMap.set(d.name.trim().toLowerCase(), d));
+                    data.designs.forEach(d => {
+                        let key = d.name.trim().toLowerCase();
+                        if(designMap.has(key)) {
+                            let existing = designMap.get(key);
+                            if((d.id || 0) > (existing.id || 0)) designMap.set(key, d);
+                        } else {
+                            designMap.set(key, d);
+                        }
+                    });
+                    designs = Array.from(designMap.values());
+                }
+                if(data.currentInventory) {
+                    Object.keys(data.currentInventory).forEach(code => {
+                        currentInventory[code] = Math.max(currentInventory[code] || 0, data.currentInventory[code]);
+                    });
+                }
+                if(data.unopenedInventory) {
+                    Object.keys(data.unopenedInventory).forEach(code => {
+                        unopenedInventory[code] = Math.max(unopenedInventory[code] || 0, data.unopenedInventory[code]);
+                    });
+                }
+                if(data.productions) {
+                    let prodMap = new Map();
+                    productions.forEach(p => prodMap.set(p.id, p));
+                    data.productions.forEach(p => prodMap.set(p.id, p));
+                    productions = Array.from(prodMap.values());
+                }
+                if(data.restocks) {
+                    let restockSet = new Set();
+                    let mergedRestocks = [];
+                    [...restocks, ...data.restocks].forEach(r => {
+                        let sig = `${r.date}_${r.code}_${r.gram}_${r.type}`;
+                        if(!restockSet.has(sig)) {
+                            restockSet.add(sig);
+                            mergedRestocks.push(r);
+                        }
+                    });
+                    restocks = mergedRestocks;
+                }
+                if(data.inventoryLogs) {
+                    let logMap = new Map();
+                    inventoryLogs.forEach(l => logMap.set(l.id, l));
+                    data.inventoryLogs.forEach(l => logMap.set(l.id, l));
+                    inventoryLogs = Array.from(logMap.values());
+                }
+                saveAll();
+                refreshAll();
+                alertCustom("성공", "데이터가 성공적으로 병합되었습니다!");
+            });
+        } catch(err) {
+            console.error(err);
+            alertCustom("오류", "올바른 백업 파일이 아닙니다.");
+        }
+        event.target.value = "";
+    };
+    reader.readAsText(file);
+}
+
+function resetAllDataConfirm(){
+    confirmCustom("데이터 초기화 경고", "정말 모든 데이터를 초기화하시겠습니까?\n이 작업은 되돌릴 수 없습니다.", () => {
+        localStorage.clear();
+        alertCustom("초기화 완료", "모든 데이터가 초기화되었습니다. 확인을 누르면 앱이 새로고침됩니다.");
+        setTimeout(() => location.reload(), 1500);
+    });
+}
+
+function updateThemeSetting(){
+    let mode = settings.themeMode;
+    if(mode === 'dark'){
+        document.documentElement.setAttribute('data-theme', 'dark');
+    } else if(mode === 'light'){
+        document.documentElement.setAttribute('data-theme', 'light');
+    } else {
+        let isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
+}
+
+function loadSettingsToUI(){
+    document.getElementById("settingThemeMode").value = settings.themeMode;
+    document.getElementById("settingLowStockThreshold").value = settings.lowStockThreshold;
+    document.getElementById("lblLowStockThreshold").innerText = settings.lowStockThreshold;
+    document.getElementById("settingTransferUnit").value = settings.transferUnit;
+    document.getElementById("lblTransferUnit").innerText = settings.transferUnit;
+    document.getElementById("catUnopened").checked = settings.catUnopened;
+    updateThemeSetting();
+    updateStockTabsVisibility();
+    renderCustomThresholds();
+}
+
+function saveSettings(){
+    settings.themeMode = document.getElementById("settingThemeMode").value;
+    settings.lowStockThreshold = Number(document.getElementById("settingLowStockThreshold").value);
+    settings.transferUnit = Number(document.getElementById("settingTransferUnit").value);
+    settings.catUnopened = document.getElementById("catUnopened").checked;
+    saveAll();
+    updateThemeSetting();
+    updateStockTabsVisibility();
+    alertCustom("설정", "설정이 저장되었습니다.");
+}
+
+function updateStockTabsVisibility(){
+    let headerHtml = '';
+    headerHtml += `<button class="stockTab active" onclick="openStockTab(event,'inventorySub')">사용 가능한 재고</button>`;
+    if(settings.catUnopened) headerHtml += `<button class="stockTab" onclick="openStockTab(event,'unopenedSub')">보충 가능 재고</button>`;
+    headerHtml += `<button class="stockTab" onclick="openStockTab(event,'restockSub')">입고 관리</button>`;
+    document.getElementById("stockSubTabsBar").innerHTML = headerHtml;
+
+    let btnUnopenedRestock = document.getElementById("btnRestockUnopened");
+    if(btnUnopenedRestock) {
+        btnUnopenedRestock.style.display = settings.catUnopened ? 'block' : 'none';
+    }
+
+    let activeStock = document.querySelector(".stockPage.active");
+    if(!activeStock || activeStock.style.display === 'none'){
+        openStockTab(null, 'inventorySub');
+    }
+}
+
+function toggleDrawer(open){
+    let drawer = document.getElementById("drawerMenu");
+    let backdrop = document.getElementById("drawerBackdrop");
+    if(open){
+        drawer.classList.add("open");
+        backdrop.style.display = "block";
+    } else {
+        drawer.classList.remove("open");
+        backdrop.style.display = "none";
+    }
+}
+
+function openMainCategory(pageId){
+    openPage(null, pageId);
+    toggleDrawer(false);
+}
+
+function openPage(evt, page){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.querySelectorAll(".mainTabs button").forEach(b => b.classList.remove("active"));
+    document.getElementById(page).classList.add("active");
+    
+    let tabsContainer = document.getElementById("mainTabsContainer");
+    let hamburgerBtn = document.getElementById("hamburgerBtn");
+    let designSubTabsBar = document.getElementById("designSubTabsBar");
+    let stockSubTabsBar = document.getElementById("stockSubTabsBar");
+
+    if(page === 'home') {
+        tabsContainer.style.display = "none";
+        hamburgerBtn.style.display = "none";
+        designSubTabsBar.style.display = "none";
+        stockSubTabsBar.style.display = "none";
+    } else {
+        tabsContainer.style.display = "flex";
+        hamburgerBtn.style.display = "block";
+        
+        if(page === 'designGroup') {
+            designSubTabsBar.style.display = "flex";
+            stockSubTabsBar.style.display = "none";
+        } else if(page === 'stock') {
+            designSubTabsBar.style.display = "none";
+            stockSubTabsBar.style.display = "flex";
+        } else {
+            designSubTabsBar.style.display = "none";
+            stockSubTabsBar.style.display = "none";
+        }
+
+        if(evt && evt.target) {
+            evt.target.classList.add("active");
+        } else {
+            document.querySelectorAll(".mainTabs button").forEach(b => {
+                if(b.getAttribute("onclick") && b.getAttribute("onclick").includes(page)) {
+                    b.classList.add("active");
+                }
+            });
+        }
+    }
+    refreshAll();
+}
+
+function goHome() {
+    openPage(null, 'home');
+}
+
+function openDesignSubTab(subId){
+    document.querySelectorAll(".designSubPage").forEach(x => x.style.display = 'none');
+    document.querySelectorAll("#designSubTabsBar button").forEach(b => b.classList.remove("active"));
+    document.getElementById(subId).style.display = 'block';
+    if(event && event.target) event.target.classList.add("active");
+    refreshAll();
+}
+
+function openDesignInnerTab(subPageId){
+    document.querySelectorAll("#subGroupDesigns .searchPage").forEach(x => x.style.display = 'none');
+    document.querySelectorAll("#subGroupDesigns button.designTab").forEach(b => {
+        b.classList.remove("active");
+        b.style.background = "var(--base-gray)";
+        b.style.color = "var(--text-secondary)";
+    });
+    document.getElementById(subPageId).style.display = 'block';
+    if(event && event.target) {
+        event.target.classList.add("active");
+        event.target.style.background = "var(--pastel-powder-blue)";
+        event.target.style.color = "#2C3748";
+    }
+}
+
+function openSearchTab(evt, pageId){
+    document.querySelectorAll("#nameSearch, #colorSearch").forEach(x => x.style.display = 'none');
+    document.querySelectorAll(".searchTab").forEach(b => {
+        b.classList.remove("active");
+        b.style.background = "var(--base-gray)";
+        b.style.color = "var(--text-secondary)";
+    });
+    document.getElementById(pageId).style.display = 'block';
+    if(evt && evt.target) {
+        evt.target.classList.add("active");
+        evt.target.style.background = "var(--pastel-powder-blue)";
+        evt.target.style.color = "#2C3748";
+    }
+}
+
+function openStockTab(evt, pageId) {
+    document.querySelectorAll(".stockPage").forEach(x => x.classList.remove("active"));
+    document.querySelectorAll("#stockSubTabsBar button").forEach(b => b.classList.remove("active"));
+    document.getElementById(pageId).classList.add("active");
+    if(evt && evt.target) evt.target.classList.add("active");
+}
+
+function compressImage(file, callback) {
+    let reader = new FileReader();
+    reader.onload = function (e) {
+        let img = new Image();
+        img.onload = function () {
+            let canvas = document.createElement('canvas');
+            let MAX_WIDTH = 600, MAX_HEIGHT = 600;
+            let width = img.width, height = img.height;
+            if (width > height) {
+                if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
+            } else {
+                if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
+            }
+            canvas.width = width; canvas.height = height;
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            callback(canvas.toDataURL('image/jpeg', 0.7));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveDesign(){
+    let name = document.getElementById("designName").value.trim();
+    if(!name){ alertCustom("알림", "도안명을 입력하세요."); return; }
+    if(designs.some(d => d.name.trim().toLowerCase() === name.toLowerCase() && d.id !== window.editingDesignId)){
+        alertCustom("알림", "이미 등록된 도안명입니다."); return;
+    }
+    let size = document.getElementById("designSize").value;
+    let isWish = document.getElementById("designIsWish").checked;
+    let txt = document.getElementById("designColors").value;
+    let colors = [];
+    txt.split("\n").forEach(line => {
+        let m = line.trim().match(/^([A-Z0-9]+)\s+(\d+)/i);
+        if(m){ colors.push({ code: m[1].toUpperCase(), qty: Number(m[2]) }); }
+    });
+
+    let fileInput = document.getElementById("designImageFile");
+    let file = fileInput.files[0];
+    if(file){
+        compressImage(file, function(compressedDataUrl){
+            processSaveDesign(name, size, isWish, colors, compressedDataUrl);
+        });
+    } else {
+        let existingImage = null;
+        if(window.editingDesignId){
+            let target = designs.find(d => d.id === window.editingDesignId);
+            if(target) existingImage = target.image;
+        }
+        processSaveDesign(name, size, isWish, colors, existingImage);
+    }
+}
+
+function processSaveDesign(name, size, isWish, colors, imageUrl){
+    if(window.editingDesignId){
+        let targetDesign = designs.find(d => d.id === window.editingDesignId);
+        if(targetDesign){
+            targetDesign.name = name;
+            targetDesign.size = size;
+            targetDesign.isWish = isWish;
+            targetDesign.colors = colors;
+            targetDesign.image = imageUrl;
+        }
+        window.editingDesignId = null;
+    } else {
+        designs.push({ id: Date.now(), name, size, isWish, colors, image: imageUrl });
+    }
+    document.getElementById("designName").value = "";
+    document.getElementById("designColors").value = "";
+    document.getElementById("designIsWish").checked = false;
+    if(document.getElementById("designImageFile")) document.getElementById("designImageFile").value = "";
+    document.getElementById("designCardTitle").innerText = "도안 등록";
+    saveAll();
+    refreshAll();
+    document.querySelector('#designSubTabsBar button').click();
+    openDesignInnerTab('designSearch');
+}
+
+function renderDesigns(){
+    let keyword = (document.getElementById("searchDesign")?.value || "").toLowerCase();
+    let sortType = document.getElementById("designSort")?.value;
+    let list = designs.filter(d => d.name.toLowerCase().includes(keyword));
+
+    if(sortType === "name") list.sort((a,b)=> a.name.trim().localeCompare(b.name.trim(), "ko"));
+    else if(sortType === "most") list.sort((a,b)=> totalBeads(b) - totalBeads(a));
+    else if(sortType === "least") list.sort((a,b)=> totalBeads(a) - totalBeads(b));
+    else if(sortType === "wish") list = list.filter(d => d.isWish);
+    else list.sort((a,b)=> b.id - a.id);
+
+    let html = "";
+    list.forEach(d => {
+        let totalQty = totalBeads(d);
+        let colorCount = d.colors.length;
+        let designSize = d.size || "104X104";
+        let wishBadge = d.isWish ? `<span class="badge-wish">위시리스트</span>` : '';
+        
+        let summaryText = `사이즈: ${designSize}<br>총 비즈: ${totalQty.toLocaleString()}개 (${colorCount}가지 색상)`;
+
+        let imgHtml = d.image ? `
+            <div onclick="openDesignDetailModal(${d.id})" style="margin-bottom:10px; text-align:center; background:var(--base-gray); padding:6px; border-radius:6px; cursor:pointer;" title="클릭하여 상세 보기">
+                <img src="${d.image}" style="max-width:100%; max-height:160px; object-fit:contain; border-radius:4px;">
+            </div>` : "";
+
+        html += `
+        <div class="design-card">
+            <h4 onclick="openDesignDetailModal(${d.id})" style="cursor:pointer; margin-top:0; margin-bottom:8px;">${d.name} ${wishBadge}</h4>
+            ${imgHtml}
+            <div onclick="openDesignDetailModal(${d.id})" style="font-size:13px; color:var(--text-secondary); margin-bottom:12px; cursor:pointer; background:var(--base-gray); padding:8px; border-radius:6px; text-align:center; line-height:1.5;">
+                ${summaryText}
+            </div>
+            <div class="buttonRow">
+                <button style="background:var(--pastel-powder-blue); color:#2C3748;" onclick="openProductionModal(${d.id})">도안 제작</button>
+                <button onclick="editDesign(${d.id})" style="background:var(--base-gray); color:var(--text-color);">수정</button>
+                <button onclick="deleteDesign(${d.id})" style="background:#ffcccc; color:red;">삭제</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById("designList").innerHTML = html || "<div style='color:var(--text-secondary); padding:10px;'>등록된 도안이 없습니다.</div>";
+}
+
+function totalBeads(d){
+    return d.colors.reduce((sum, c) => sum + c.qty, 0);
+}
+
+function editDesign(id){
+    let design = designs.find(d => d.id === id);
+    if(!design) return;
+    document.getElementById("designName").value = design.name;
+    document.getElementById("designSize").value = design.size || "104X104";
+    document.getElementById("designIsWish").checked = !!design.isWish;
+    let txt = "";
+    design.colors.forEach(c => { txt += c.code + " " + c.qty + "\n"; });
+    document.getElementById("designColors").value = txt;
+    window.editingDesignId = id;
+    document.getElementById("designCardTitle").innerText = "도안 수정";
+    
+    document.querySelectorAll(".designSubPage").forEach(x => x.style.display = 'none');
+    document.querySelectorAll("#designSubTabsBar button").forEach(b => b.classList.remove("active"));
+    document.getElementById("subGroupDesigns").style.display = 'block';
+    document.querySelectorAll("#subGroupDesigns .searchPage").forEach(x => x.style.display = 'none');
+    document.getElementById("designRegister").style.display = 'block';
+
+    let subTabs = document.querySelectorAll("#designSubTabsBar button");
+    if(subTabs[0]) subTabs[0].classList.add("active");
+    let innerTabs = document.querySelectorAll("#subGroupDesigns button.designTab");
+    innerTabs.forEach((b, idx) => {
+        if(idx === 1){
+            b.classList.add("active");
+            b.style.background = "var(--pastel-powder-blue)";
+            b.style.color = "#2C3748";
+        } else {
+            b.classList.remove("active");
+            b.style.background = "var(--base-gray)";
+            b.style.color = "var(--text-secondary)";
+        }
+    });
+}
+
+function deleteDesign(id){
+    confirmCustom("도안 삭제", "정말 이 도안을 삭제하시겠습니까?", () => {
+        designs = designs.filter(x => x.id !== id);
+        saveAll();
+        refreshAll();
+    });
+}
+
+function openDesignDetailModal(id){
+    let d = designs.find(item => item.id === id);
+    if(!d) return;
+    currentDetailDesignId = id;
+
+    document.getElementById("detailModalTitle").innerText = d.name;
+    document.getElementById("detailModalImage").innerHTML = d.image ? `<img src="${d.image}" style="max-width:100%; max-height:160px; object-fit:contain; border-radius:6px;">` : "";
+    let totalQty = totalBeads(d);
+    document.getElementById("detailModalSummary").innerHTML = `도안 사이즈 : <b>${d.size || "104X104"}</b> ${d.isWish ? '| <span style="color:#D493A1;">위시리스트</span>' : ''}<br>전체 사용 비즈량 : 총 <b>${totalQty.toLocaleString()}개</b> (${d.colors.length}가지 색상)`;
+
+    let colorsHtml = "";
+    d.colors.forEach(c => {
+        let hex = beadColors[c.code] || "#ccc";
+        colorsHtml += `
+        <div style="display:flex; align-items:center; gap:8px; background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color);">
+            <div style="width:16px; height:16px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div>
+            <div style="font-size:12px; overflow:hidden;"><b>${c.code}</b> : ${c.qty.toLocaleString()}개</div>
+        </div>`;
+    });
+    document.getElementById("detailModalColors").innerHTML = colorsHtml;
+    document.getElementById("designDetailModal").style.display = "flex";
+}
+function closeDesignDetailModal(){ document.getElementById("designDetailModal").style.display = "none"; currentDetailDesignId = null; }
+function openProductionModalFromDetail(){
+    let id = currentDetailDesignId; closeDesignDetailModal(); if(id) openProductionModal(id);
+}
+
+function openProductionModal(id){
+    selectedDesignForProd = designs.find(d => d.id === id);
+    if(!selectedDesignForProd) return;
+    document.getElementById("modalDesignTitle").innerText = `도안 제작 : ${selectedDesignForProd.name}`;
+    document.getElementById("modalDesignImage").innerHTML = selectedDesignForProd.image ? `<img src="${selectedDesignForProd.image}" style="max-width:100%; max-height:140px; object-fit:contain; border-radius:4px;">` : "";
+    document.getElementById("modalProdDate").value = new Date().toISOString().slice(0,10);
+    document.getElementById("modalUseSubstitute").checked = false;
+    document.getElementById("substituteMappingContainer").style.display = "none";
+    document.getElementById("substituteMappingRows").innerHTML = "";
+    
+    updateProductionStockCheck();
+    document.getElementById("productionModal").style.display = "flex";
+}
+
+function toggleSubstituteArea(){
+    let isChecked = document.getElementById("modalUseSubstitute").checked;
+    let container = document.getElementById("substituteMappingContainer");
+    container.style.display = isChecked ? "block" : "none";
+    if(isChecked && document.getElementById("substituteMappingRows").children.length === 0){
+        // 기본으로 부족한 색상이나 첫 번째 색상을 대상으로 한 줄 추가
+        addSubstituteMappingRow("");
+    }
+    updateProductionStockCheck();
+}
+
+function addSubstituteMappingRow(origVal = "", altVal = ""){
+    if(!selectedDesignForProd) return;
+    let rowsContainer = document.getElementById("substituteMappingRows");
+    let rowId = "map_row_" + Date.now() + "_" + Math.random().toString(36).substr(2,4);
+    
+    let optionsHtml = `<option value="">-- 도안 색상 선택 --</option>`;
+    selectedDesignForProd.colors.forEach(c => {
+        let sel = c.code === origVal ? "selected" : "";
+        optionsHtml += `<option value="${c.code}" ${sel}>${c.code} (${c.qty}개)</option>`;
+    });
+
+    let rowDiv = document.createElement("div");
+    rowDiv.id = rowId;
+    rowDiv.style.display = "flex";
+    rowDiv.style.gap = "6px";
+    rowDiv.style.alignItems = "center";
+    rowDiv.innerHTML = `
+        <select class="mapOrig" style="flex:1; margin:0; padding:8px; font-size:13px;" onchange="updateProductionStockCheck()">${optionsHtml}</select>
+        <span style="font-weight:bold;">→</span>
+        <input class="mapAlt" type="text" placeholder="대체코드" value="${altVal}" style="flex:1; margin:0; padding:8px; font-size:13px; text-transform:uppercase;" oninput="updateProductionStockCheck()">
+        <button onclick="document.getElementById('${rowId}').remove(); updateProductionStockCheck();" style="width:auto; padding:8px 10px; background:#ffcccc; color:red; font-size:12px; margin:0;">✕</button>
+    `;
+    rowsContainer.appendChild(rowDiv);
+}
+
+function getManualSubstituteMap(){
+    let map = {};
+    let isChecked = document.getElementById("modalUseSubstitute").checked;
+    if(!isChecked) return map;
+    
+    let rows = document.querySelectorAll("#substituteMappingRows > div");
+    rows.forEach(row => {
+        let orig = row.querySelector(".mapOrig").value.trim().toUpperCase();
+        let alt = row.querySelector(".mapAlt").value.trim().toUpperCase();
+        if(orig && alt){
+            map[orig] = alt;
+        }
+    });
+    return map;
+}
+
+function updateProductionStockCheck(){
+    if(!selectedDesignForProd) return;
+    let useSub = document.getElementById("modalUseSubstitute").checked;
+    let manualMap = getManualSubstituteMap();
+    let missingList = [];
+    let stockDetailsHtml = "";
+    
+    selectedDesignForProd.colors.forEach(c => {
+        let requiredGram = Math.ceil(c.qty / 100);
+        let availableGram = currentInventory[c.code] || 0;
+        
+        if(availableGram >= requiredGram){
+            stockDetailsHtml += `<div style="font-size:12px; margin-bottom:4px; color:#16a34a;">✔ ${c.code} : 보유 ${availableGram}G (필요 ${requiredGram}G) - 충분</div>`;
+        } else {
+            let deficitGram = requiredGram - availableGram;
+            let deficitCount = deficitGram * 100;
+            let effectiveAlt = null;
+
+            // 1. Check manual mapping first
+            if(useSub && manualMap[c.code]){
+                let altCode = manualMap[c.code];
+                let altAvail = currentInventory[altCode] || 0;
+                if(altAvail >= deficitGram){
+                    effectiveAlt = altCode;
+                }
+            }
+            // 2. Fallback to automatic substitute suggestions if not manually mapped
+            if(!effectiveAlt && useSub && substitutes[c.code]){
+                for(let alt of substitutes[c.code]){
+                    let altAvail = currentInventory[alt] || 0;
+                    if(altAvail >= deficitGram){
+                        effectiveAlt = alt;
+                        break;
+                    }
+                }
+            }
+
+            if(effectiveAlt){
+                stockDetailsHtml += `<div style="font-size:12px; margin-bottom:4px; color:#2563eb;">🔄 ${c.code} 부족(${deficitGram}G) → 대체 색상 [${effectiveAlt}]로 커버 가능</div>`;
+            } else {
+                missingList.push({ code: c.code, count: deficitCount });
+                stockDetailsHtml += `<div style="font-size:12px; margin-bottom:4px; color:red;">✖ ${c.code} : 보유 ${availableGram}G (필요 ${requiredGram}G) - 약 ${deficitCount.toLocaleString()}개 부족</div>`;
+            }
+        }
+    });
+
+    let resHtml = "";
+    if(missingList.length === 0){
+        resHtml = `<span class="success">✔ 현재 재고(또는 대체 색상)로 충분히 제작 가능합니다!</span><br><div style="margin-top:8px;">${stockDetailsHtml}</div>`;
+    } else {
+        resHtml = `<span class="danger">✖ 재고가 부족하여 제작할 수 없습니다.</span><br><div style="margin-top:8px;">${stockDetailsHtml}</div>`;
+    }
+    document.getElementById("modalStockCheckResult").innerHTML = resHtml;
+}
+
+function closeProductionModal(){ document.getElementById("productionModal").style.display = "none"; selectedDesignForProd = null; }
+
+function confirmProduction(){
+    if(!selectedDesignForProd) return;
+    let prodDate = document.getElementById("modalProdDate").value;
+    if(!prodDate){ alertCustom("알림", "제작 날짜를 선택해주세요."); return; }
+
+    let useSub = document.getElementById("modalUseSubstitute").checked;
+    let manualMap = getManualSubstituteMap();
+    let cannotMake = false;
+    let deductionPlan = [];
+
+    for(let c of selectedDesignForProd.colors){
+        let requiredGram = Math.ceil(c.qty / 100);
+        let availableGram = currentInventory[c.code] || 0;
+
+        if(availableGram >= requiredGram){
+            deductionPlan.push({ code: c.code, gram: requiredGram });
+        } else {
+            let deficitGram = requiredGram - availableGram;
+            if(availableGram > 0){
+                deductionPlan.push({ code: c.code, gram: availableGram });
+            }
+
+            if(deficitGram > 0){
+                let altCodeToUse = null;
+                if(useSub && manualMap[c.code]){
+                    let alt = manualMap[c.code];
+                    let altAvail = currentInventory[alt] || 0;
+                    if(altAvail >= deficitGram) altCodeToUse = alt;
+                }
+                if(!altCodeToUse && useSub && substitutes[c.code]){
+                    for(let alt of substitutes[c.code]){
+                        let altAvail = currentInventory[alt] || 0;
+                        if(altAvail >= deficitGram){
+                            altCodeToUse = alt;
+                            break;
+                        }
+                    }
+                }
+
+                if(altCodeToUse){
+                    deductionPlan.push({ code: altCodeToUse, gram: deficitGram });
+                } else {
+                    cannotMake = true;
+                }
+            }
+        }
+    }
+
+    if(cannotMake){
+        alertCustom("알림", "재고(또는 대체 색상)가 부족하여 제작을 완료할 수 없습니다.");
+        return;
+    }
+
+    deductionPlan.forEach(d => {
+        currentInventory[d.code] -= d.gram;
+        if(currentInventory[d.code] <= 0) delete currentInventory[d.code];
+    });
+
+    if(selectedDesignForProd.isWish){
+        selectedDesignForProd.isWish = false;
+    }
+
+    productions.push({
+        id: Date.now(),
+        date: new Date(prodDate).toISOString(),
+        designId: selectedDesignForProd.id,
+        designName: selectedDesignForProd.name,
+        count: 1,
+        colors: selectedDesignForProd.colors
+    });
+
+    saveAll();
+    refreshAll();
+    closeProductionModal();
+    alertCustom("성공", "제작 완료! 재고가 정상적으로 차감되었습니다.");
+}
+
+function renderHistory(){
+    let html = "";
+    let list = productions.slice();
+    let sortType = document.getElementById("historySort")?.value;
+    if(sortType === "old") list.sort((a,b)=> a.id - b.id);
+    else list.sort((a,b)=> b.id - a.id);
+
+    list.forEach(p => {
+        let pDate = p.date ? new Date(p.date).toLocaleDateString() : "";
+        html += `
+        <div class="design-card">
+            <b>${p.designName}</b><br>
+            <span style="color:var(--text-secondary); font-size:13px;">제작일 : ${pDate}</span>
+            <div class="buttonRow">
+                <button onclick="openEditProductionModal(${p.id})" style="background:var(--base-gray); color:var(--text-color);">수정</button>
+                <button onclick="deleteProduction(${p.id})" style="background:#ffcccc; color:red;">삭제</button>
+            </div>
+        </div>`;
+    });
+    document.getElementById("historyList").innerHTML = html || "<div style='color:var(--text-secondary);'>제작 이력이 없습니다.</div>";
+}
+
+function deleteProduction(id){
+    confirmCustom("제작 이력 삭제", "이 제작 이력을 삭제하시겠습니까?", () => {
+        productions = productions.filter(x => x.id !== id);
+        saveAll(); refreshAll();
+    });
+}
+
+function openEditProductionModal(id){
+    let p = productions.find(x => x.id === id);
+    if(!p) return;
+    editingProductionId = id;
+    document.getElementById("editProdDesignName").innerText = `도안명 : ${p.designName}`;
+    document.getElementById("editProdDate").value = p.date ? p.date.slice(0,10) : new Date().toISOString().slice(0,10);
+    document.getElementById("editProductionModal").style.display = "flex";
+}
+function closeEditProductionModal(){ document.getElementById("editProductionModal").style.display = "none"; editingProductionId = null; }
+function confirmEditProduction(){
+    let p = productions.find(x => x.id === editingProductionId);
+    if(!p) return;
+    let newDate = document.getElementById("editProdDate").value;
+    if(!newDate){ alertCustom("알림", "날짜를 입력해주세요."); return; }
+    p.date = new Date(newDate).toISOString();
+    saveAll(); refreshAll(); closeEditProductionModal();
+    alertCustom("성공", "제작 이력이 수정되었습니다.");
+}
+
+function getSelectedMonthUsage(){
+    let pickerVal = document.getElementById("usageMonthPicker")?.value;
+    let targetYear, targetMonth;
+    if(pickerVal){
+        let parts = pickerVal.split("-");
+        targetYear = Number(parts[0]); targetMonth = Number(parts[1]) - 1;
+    } else {
+        let now = new Date(); targetYear = now.getFullYear(); targetMonth = now.getMonth();
+    }
+    let result = {};
+    productions.forEach(p => {
+        let d = new Date(p.date);
+        if(d.getFullYear() === targetYear && d.getMonth() === targetMonth){
+            p.colors.forEach(c => {
+                if(!result[c.code]) result[c.code] = 0;
+                result[c.code] += c.qty * p.count;
+            });
+        }
+    });
+    return result;
+}
+
+function renderMonthlyUsage(){
+    let usage = getSelectedMonthUsage();
+    let total = 0;
+    let sortedEntries = Object.entries(usage).sort((a,b) => b[1] - a[1]);
+    let top10 = sortedEntries.slice(0, 10);
+    let rest = sortedEntries.slice(10);
+    let html = "";
+
+    if(top10.length > 0){
+        html += `<div style="font-size:14px; font-weight:bold; color:#4A5568; margin-bottom:8px;">🔥 이달의 TOP 10 사용 색상</div>`;
+        html += `<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:8px; margin-bottom:15px;">`;
+        top10.forEach(([code, qty]) => {
+            html += `
+            <div style="background:var(--pastel-vanilla); padding:10px 6px; border-radius:8px; border:1px solid var(--border-color); text-align:center;">
+                <div style="display:flex; justify-content:center; align-items:center; gap:4px; margin-bottom:4px;">
+                    <div style="width:14px; height:14px; background:${beadColors[code] || "#ccc"}; border:1px solid #999; border-radius:3px;"></div>
+                    <b style="font-size:13px;">${code}</b>
+                </div>
+                <div style="font-size:12px; color:var(--text-secondary); font-weight:bold;">${qty.toLocaleString()}개</div>
+            </div>`;
+            total += qty;
+        });
+        html += `</div>`;
+    }
+
+    if(rest.length > 0){
+        html += `<div style="font-size:13px; font-weight:bold; color:var(--text-secondary); margin-bottom:6px;">기타 사용 색상</div>`;
+        html += `<div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:15px;">`;
+        rest.forEach(([code, qty]) => {
+            html += `
+            <div style="background:var(--base-gray); padding:4px 8px; border-radius:4px; border:1px solid var(--border-color); font-size:11px; display:flex; align-items:center; gap:4px;">
+                <div style="width:10px; height:10px; background:${beadColors[code] || "#ccc"}; border:1px solid #999; border-radius:2px;"></div>
+                <span><b>${code}</b>: ${qty.toLocaleString()}개</span>
+            </div>`;
+            total += qty;
+        });
+        html += `</div>`;
+    }
+
+    if(sortedEntries.length === 0){
+        html = `<div style="color:var(--text-secondary); font-size:13px; text-align:center; padding:10px;">선택한 달에 사용된 비즈 내역이 없습니다.</div>`;
+    } else {
+        html += `<hr><b>총 사용량 : ${total.toLocaleString()}개</b>`;
+    }
+    document.getElementById("monthlyUsage").innerHTML = html;
+}
+
+function registerInventory(){
+    let text = document.getElementById("inventoryText").value.trim();
+    if(!text){ alertCustom("알림", "재고 내용을 입력해주세요."); return; }
+    text.split("\n").forEach(line => {
+        let m = line.trim().match(/^([A-Z0-9]+)\s+(\d+)\s*[gG]?$/i);
+        if(m) currentInventory[m[1].toUpperCase()] = Number(m[2]);
+    });
+    inventoryLogs.push({ id: Date.now(), date: new Date().toISOString().slice(0,10), type: 'open', text });
+    saveAll(); document.getElementById("inventoryText").value = ""; refreshAll();
+    alertCustom("성공", "사용 가능한 재고가 등록되었습니다.");
+}
+
+function registerUnopenedInventory(){
+    let text = document.getElementById("unopenedText").value.trim();
+    if(!text){ alertCustom("알림", "재고 내용을 입력해주세요."); return; }
+    text.split("\n").forEach(line => {
+        let m = line.trim().match(/^([A-Z0-9]+)\s+(\d+)\s*[gG]?$/i);
+        if(m) unopenedInventory[m[1].toUpperCase()] = Number(m[2]);
+    });
+    inventoryLogs.push({ id: Date.now(), date: new Date().toISOString().slice(0,10), type: 'unopened', text });
+    saveAll(); document.getElementById("unopenedText").value = ""; refreshAll();
+    alertCustom("성공", "보충 가능 재고가 등록되었습니다.");
+}
+
+function renderGroupedInventory(inventoryObj, isUnopened = false) {
+    let groups = {};
+    let sortedCodes = sortCodesNatural(Object.keys(beadColors));
+    sortedCodes.forEach(code => {
+        let prefix = code.charAt(0);
+        if(!groups[prefix]) groups[prefix] = [];
+        let gram = inventoryObj[code] || 0;
+        groups[prefix].push({ code, gram });
+    });
+
+    let html = "";
+    Object.keys(groups).sort().forEach(prefix => {
+        let items = groups[prefix];
+        if(isUnopened) items = items.filter(x => x.gram > 0);
+        if(isUnopened && items.length === 0) return;
+
+        let unit = settings.transferUnit;
+        html += `
+        <details style="margin-bottom:10px; border:1px solid var(--border-color); border-radius:8px; background:var(--card-bg); overflow:hidden;">
+            <summary style="padding:12px 15px; background:var(--base-gray); font-weight:bold; cursor:pointer; color:var(--text-color);">
+                ${prefix} 그룹 (${items.length}개 색상)
+            </summary>
+            <div style="padding:12px; display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;">`;
+
+        items.forEach(({code, gram}) => {
+            let count = gram * 100;
+            let hex = beadColors[code] || "#ccc";
+            if(isUnopened) {
+                html += `
+                <div style="background:var(--base-gray); padding:8px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; gap:6px;">
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <div style="width:14px; height:14px; background:${hex}; border:1px solid #999; border-radius:3px;"></div>
+                        <b style="font-size:12px;">${code} : ${gram}G</b>
+                    </div>
+                    <div style="font-size:11px; color:var(--text-secondary);">약 ${count.toLocaleString()}개</div>
+                    <div style="display:flex; gap:4px; margin-top:2px;">
+                        <button onclick="quickTransfer('${code}', ${unit})" title="설정단위(${unit}G)만큼 원터치 이동" style="padding:6px; font-size:14px; flex:1; background:var(--pastel-powder-blue); color:#2C3748;">✂️</button>
+                        <button onclick="customTransfer('${code}')" title="원하는 그람수 직접 입력" style="padding:6px; font-size:14px; flex:1; background:var(--pastel-dusty-pink); color:#4A3B45;">📦</button>
+                    </div>
+                </div>`;
+            } else {
+                html += `
+                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:8px; cursor:pointer;" title="클릭하여 수량 수정">
+                    <div style="width:16px; height:16px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div>
+                    <div style="font-size:12px; overflow:hidden;"><b>${code}</b> : ${gram}G<br><span style="color:var(--text-secondary);">약 ${count.toLocaleString()}개</span></div>
+                </div>`;
+            }
+        });
+        html += `</div></details>`;
+    });
+    if(isUnopened && html === "") html = "<div style='color:var(--text-secondary); font-size:13px; padding:10px;'>보관 중인 보충 가능 재고가 없습니다.</div>";
+    return html;
+}
+
+function renderCurrentInventory(){ document.getElementById("currentInventoryList").innerHTML = renderGroupedInventory(currentInventory, false); }
+function renderUnopenedInventory(){ document.getElementById("unopenedInventoryList").innerHTML = renderGroupedInventory(unopenedInventory, true); }
+
+function editOpenInventory(code){
+    let currentGram = currentInventory[code] || 0;
+    promptCustom("사용 가능한 재고 수정", `[${code}] 수정할 사용 가능한 재고 용량(G) 입력 (0 입력 시 삭제):`, currentGram, function(input){
+        if(input === null || input === "") return;
+        let gram = Number(input);
+        if(isNaN(gram) || gram < 0){ alertCustom("알림", "올바른 숫자를 입력하세요."); return; }
+        if(gram === 0) delete currentInventory[code]; else currentInventory[code] = gram;
+        saveAll(); refreshAll();
+    });
+}
+
+function quickTransfer(code, amount){
+    if((unopenedInventory[code] || 0) < amount){ alertCustom("알림", "보충 가능 재고가 부족합니다."); return; }
+    unopenedInventory[code] -= amount;
+    if(unopenedInventory[code] <= 0) delete unopenedInventory[code];
+    currentInventory[code] = (currentInventory[code] || 0) + amount;
+    saveAll(); refreshAll();
+    alertCustom("성공", `[${code}] ${amount}G가 사용 가능한 재고로 이동되었습니다.`);
+}
+
+function customTransfer(code){
+    let max = unopenedInventory[code] || 0;
+    promptCustom("보충 가능 재고 이동", `[${code}] 이동할 그람수 입력 (최대 ${max}G):`, '10', function(val){
+        if(val === null || val === "") return;
+        let gram = Number(val);
+        if(isNaN(gram) || gram <= 0 || gram > max){ alertCustom("알림", "올바른 값을 입력하세요."); return; }
+        unopenedInventory[code] -= gram;
+        if(unopenedInventory[code] <= 0) delete unopenedInventory[code];
+        currentInventory[code] = (currentInventory[code] || 0) + gram;
+        saveAll(); refreshAll();
+        alertCustom("성공", `[${code}] ${gram}G가 사용 가능한 재고로 이동되었습니다.`);
+    });
+}
+
+function renderAlerts(){
+    let dangerItems = [], warningItems = [];
+    Object.keys(beadColors).forEach(code => {
+        let openGram = currentInventory[code] || 0;
+        let unopenedGram = unopenedInventory[code] || 0;
+        let count = (openGram + unopenedGram) * 100;
+        let thresh = settings.customThresholds[code] !== undefined ? settings.customThresholds[code] : settings.lowStockThreshold;
+        let hex = beadColors[code] || "#ccc";
+        let box = `<span style="display:inline-block; width:12px; height:12px; background:${hex}; border:1px solid #999; border-radius:3px; vertical-align:middle; margin-right:4px;"></span>`;
+
+        if(count < thresh){
+            dangerItems.push(`<div style="display:flex; align-items:center; margin-bottom:4px; font-size:13px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
+        } else if(count < thresh * 1.5){
+            warningItems.push(`<div style="display:flex; align-items:center; margin-bottom:4px; font-size:13px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
+        }
+    });
+
+    let dHtml = dangerItems.length ? dangerItems.join("") : "<div style='color:var(--text-secondary); font-size:13px;'>해당 없음</div>";
+    let wHtml = warningItems.length ? warningItems.join("") : "<div style='color:var(--text-secondary); font-size:13px;'>해당 없음</div>";
+
+    let grid = `
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:12px;">
+        <div style="background:#fff5f5; padding:10px; border-radius:8px; border:1px solid #ffcccc;">
+            <div style="font-weight:bold; color:red; margin-bottom:8px; font-size:13px;">🔴 재고 부족 경고</div>
+            <div style="max-height:180px; overflow-y:auto;">${dHtml}</div>
+        </div>
+        <div style="background:#fffdf0; padding:10px; border-radius:8px; border:1px solid #ffeeba;">
+            <div style="font-weight:bold; color:#d97706; margin-bottom:8px; font-size:13px;">🟡 재고 여유 적음</div>
+            <div style="max-height:180px; overflow-y:auto;">${wHtml}</div>
+        </div>
+    </div>`;
+    document.getElementById("stockAlert").innerHTML = grid;
+    if(document.getElementById("purchaseList")) document.getElementById("purchaseList").innerHTML = grid;
+}
+
+function addCustomThreshold(){
+    let code = document.getElementById("customColorCode").value.trim().toUpperCase();
+    let val = Number(document.getElementById("customColorThresh").value);
+    if(!code || isNaN(val)){ alertCustom("알림", "올바른 코드와 임계값을 입력하세요."); return; }
+    settings.customThresholds[code] = val;
+    document.getElementById("customColorCode").value = "";
+    document.getElementById("customColorThresh").value = "";
+    saveAll(); renderCustomThresholds();
+}
+
+function renderCustomThresholds(){
+    let html = "";
+    Object.entries(settings.customThresholds).forEach(([code, val]) => {
+        html += `<div style="display:flex; justify-content:space-between; padding:4px 0;"><span><b>${code}</b> : ${val}개 기준</span><button onclick="deleteCustomThresh('${code}')" style="width:auto; padding:2px 6px; font-size:11px; background:#ffcccc; color:red;">삭제</button></div>`;
+    });
+    document.getElementById("customThresholdList").innerHTML = html || "설정된 개별 임계값이 없습니다.";
+}
+function deleteCustomThresh(code){ delete settings.customThresholds[code]; saveAll(); renderCustomThresholds(); }
+
+function searchSubstitute(){
+    let code = document.getElementById("subColor").value.trim().toUpperCase();
+    let result = substitutes[code];
+    if(!result){ document.getElementById("subResult").innerHTML = "등록된 대체 색상이 없습니다."; return; }
+    let html = `<div style="background:var(--pastel-vanilla); padding:10px; border-radius:8px; margin-bottom:12px; font-weight:bold;">${code}</div><div style="font-size:13px; color:var(--text-secondary); margin-bottom:10px;">대체 가능 색상</div>`;
+    result.forEach(color => {
+        html += `<div style="display:flex; align-items:center; gap:8px; margin:6px 0;"><div style="width:16px; height:16px; background:${beadColors[color] || "#ccc"}; border:1px solid #999; border-radius:3px;"></div><div>${color}</div></div>`;
+    });
+    document.getElementById("subResult").innerHTML = html;
+}
+
+function searchDesignByColor(){
+    let code = document.getElementById("searchColorCode").value.trim().toUpperCase();
+    let result = designs.filter(d => d.colors.some(c => c.code === code));
+    let html = "";
+    if(result.length === 0){ html = "해당 색상을 사용하는 도안이 없습니다."; }
+    else {
+        html += `<h4>${code} 사용 도안 (${result.length}개)</h4>`;
+        result.forEach(d => {
+            html += `<div class="design-card"><h4>${d.name}</h4><button onclick="openProductionModal(${d.id})">도안 제작</button></div>`;
+        });
+    }
+    document.getElementById("colorSearchResult").innerHTML = html;
+}
+
+function registerRestock(targetType){
+    let text = document.getElementById("restockText").value.trim();
+    if(!text) return;
+    text.split("\n").forEach(line => {
+        let m = line.trim().match(/^([A-Z0-9]+)\s+(\d+)\s*[gG]?$/i);
+        if(!m) return;
+        let code = m[1].toUpperCase();
+        let gram = Number(m[2]);
+        restocks.push({ date: new Date().toISOString(), code, gram, qty: gram*100, type: targetType });
+        if(targetType === 'open') currentInventory[code] = (currentInventory[code] || 0) + gram;
+        else unopenedInventory[code] = (unopenedInventory[code] || 0) + gram;
+    });
+    saveAll(); document.getElementById("restockText").value = ""; refreshAll();
+    alertCustom("성공", "입고 완료!");
+}
+
+function renderRestockHistory(){
+    let html = "";
+    restocks.slice().reverse().forEach((r,i) => {
+        let typeLabel = r.type === 'unopened' ? '[보충 가능]' : '[사용 가능]';
+        html += `<div>${new Date(r.date).toLocaleDateString()} &nbsp; ${typeLabel} &nbsp; <b>${r.code}</b> &nbsp; ${r.gram}G<hr></div>`;
+    });
+    document.getElementById("restockHistory").innerHTML = html || "입고 이력이 없습니다.";
+}
+
+function openVersionInfo(){ document.getElementById("versionModal").style.display = "flex"; }
+function closeVersionInfo(){ document.getElementById("versionModal").style.display = "none"; }
+
+function refreshAll(){
+    loadSettingsToUI();
+    renderDesigns();
+    renderHistory();
+    renderMonthlyUsage();
+    renderAlerts();
+    renderRestockHistory();
+    renderCurrentInventory();
+    renderUnopenedInventory();
+}
+
+window.onload = function(){
+    document.getElementById("versionBadge").innerText = APP_VERSION;
+    document.getElementById("currentVersion").innerText = APP_VERSION;
+    let now = new Date();
+    document.getElementById("usageMonthPicker").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    refreshAll();
+};
+</script>
+</body>
+</html>
