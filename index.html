@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.35</title>
+<title>비즈 사용량 관리 v1.0.36</title>
 
 <!-- TTF 폰트 정의 -->
 <style>
@@ -244,6 +244,12 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     gap: 10px;
     margin-top: 15px;
     align-items: stretch;
+}
+
+@media (max-width: 600px) {
+    #designList {
+        grid-template-columns: 1fr;
+    }
 }
 
 #historyList {
@@ -774,12 +780,11 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.35 업데이트 내용]</b>
+            <b>[v1.0.36 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>모바일 보충 가능 재고 카드 내 가위/박스 버튼 복원 및 2단 배치 적용</li>
-                <li>모바일 재고 카드 코드와 수량/중량 가독성 개선 (A2 300 개, A2 (10 G) 형식 적용)</li>
-                <li>1000개 이상 수량 K 단위 표기 적용 (1K 개, 1.2K 개)</li>
-                <li>모든 항목 내 숫자와 단위(개, G) 사이 띄어쓰기 적용</li>
+                <li>모바일 화면 도안 목록 1열(1개씩) 배치로 카드 비율 및 정렬 오류 해결</li>
+                <li>모바일 사용 가능 재고 카드 수량에 괄호 추가 (예: A2 (300 개), A2 (1K 개))</li>
+                <li>보충 가능 재고 가위/박스 버튼 유지 및 모든 단위 띄어쓰기 일괄 적용</li>
             </ul>
         </div>
     </div>
@@ -820,7 +825,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.35";
+const APP_VERSION = "v1.0.36";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -2112,7 +2117,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
                     html += `
                     <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; justify-content:center; padding:6px; gap:4px; cursor:pointer;" title="클릭하여 수량 수정">
                         <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
-                        <span style="font-size:11px; font-weight:bold; white-space:nowrap;">${code} ${countFormatted}</span>
+                        <span style="font-size:11px; font-weight:bold; white-space:nowrap;">${code} (${countFormatted})</span>
                     </div>`;
                 }
             } else {
