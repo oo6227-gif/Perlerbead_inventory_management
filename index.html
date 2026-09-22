@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.33</title>
+<title>비즈 사용량 관리 v1.0.34</title>
 
 <!-- TTF 폰트 정의 -->
 <style>
@@ -226,6 +226,8 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    height: 100%;
+    box-sizing: border-box;
 }
 .design-card button { width: auto; }
 
@@ -241,6 +243,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     margin-top: 15px;
+    align-items: stretch;
 }
 
 #historyList {
@@ -771,12 +774,11 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.33 업데이트 내용]</b>
+            <b>[v1.0.34 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>월별 사용량 TOP 10 안내 문구 정리 및 불필요한 텍스트 삭제</li>
-                <li>사용 가능 및 보충 가능 재고 그룹 기본 닫힘 처리</li>
-                <li>재고 카드 레이아웃 개편 (좌측 세로 가득 찬 색상 도형, 중간 코드 및 수량/중량 세로 정렬, 우측 가위/박스 세로 정렬)</li>
-                <li>입고 예정 재고 '택배 도착' 버튼 텍스트 간소화</li>
+                <li>클라우드 복원 시 입고 예정 재고(incomingInventory) 누락 현상 수정 (고유 ID 기준 병합 로직 보완)</li>
+                <li>모바일 도안 목록 카드 높이 및 비율 균일화 (height: 100% 적용)</li>
+                <li>모바일 화면 전용 재고 카드 컴팩트 형식(■ A2(100G) / ■ A2(1.2K개)) 적용</li>
             </ul>
         </div>
     </div>
@@ -817,7 +819,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.33";
+const APP_VERSION = "v1.0.34";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -1138,7 +1140,10 @@ function processImportData(data, isMerge) {
             });
         }
         if(data.incomingInventory) {
-            incomingInventory = [...incomingInventory, ...data.incomingInventory];
+            let incomingMap = new Map();
+            incomingInventory.forEach(item => incomingMap.set(item.id, item));
+            data.incomingInventory.forEach(item => incomingMap.set(item.id, item));
+            incomingInventory = Array.from(incomingMap.values());
         }
         if(data.productions) {
             let prodMap = new Map();
@@ -2066,6 +2071,9 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
         groups[prefix].push({ code, gram });
     });
 
+    let isMobile = window.innerWidth <= 600;
+    let gridColsStyle = isMobile ? "repeat(3, 1fr)" : "repeat(5, 1fr)";
+
     let html = "";
     Object.keys(groups).sort().forEach(prefix => {
         let items = groups[prefix];
@@ -2078,33 +2086,55 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
             <summary style="padding:10px 12px; background:var(--base-gray); font-weight:bold; cursor:pointer; color:var(--text-color); font-size:13px;">
                 ${prefix} 그룹 (${items.length}개 색상)
             </summary>
-            <div style="padding:10px; display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">`;
+            <div style="padding:10px; display:grid; grid-template-columns:${gridColsStyle}; gap:6px;">`;
 
         items.forEach(({code, gram}) => {
             let count = gram * 100;
             let hex = beadColors[code] || "#ccc";
-            if(isUnopened) {
-                html += `
-                <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden;">
-                    <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
-                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden;">
-                        <b style="font-size:11px; line-height:1.2;">${code}</b>
-                        <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram}G</span>
-                    </div>
-                    <div style="display:flex; flex-direction:column; justify-content:center; gap:2px; padding:2px; border-left:1px solid var(--border-color); background:var(--card-bg);">
-                        <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
-                        <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
-                    </div>
-                </div>`;
+            
+            if (isMobile) {
+                // 모바일 전용 컴팩트 카드 형식
+                if (isUnopened) {
+                    let mobileText = `${code}(${gram}G)`;
+                    html += `
+                    <div onclick="customTransfer('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; padding:5px 6px; gap:6px; cursor:pointer;" title="클릭하여 이동">
+                        <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
+                        <span style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mobileText}</span>
+                    </div>`;
+                } else {
+                    let countFormatted = count >= 1000 ? (count % 1000 === 0 ? (count/1000) + 'K개' : (count/1000).toFixed(1) + 'K개') : count + '개';
+                    let mobileText = `${code}(${countFormatted})`;
+                    html += `
+                    <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; padding:5px 6px; gap:6px; cursor:pointer;" title="클릭하여 수량 수정">
+                        <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
+                        <span style="font-size:11px; font-weight:bold; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${mobileText}</span>
+                    </div>`;
+                }
             } else {
-                html += `
-                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden; cursor:pointer;" title="클릭하여 수량 수정">
-                    <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
-                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden; text-align:left;">
-                        <b style="font-size:11px; line-height:1.2;">${code}</b>
-                        <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${count.toLocaleString()}개</span>
-                    </div>
-                </div>`;
+                // PC 화면 기존 레이아웃
+                if(isUnopened) {
+                    html += `
+                    <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden;">
+                        <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
+                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden;">
+                            <b style="font-size:11px; line-height:1.2;">${code}</b>
+                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram}G</span>
+                        </div>
+                        <div style="display:flex; flex-direction:column; justify-content:center; gap:2px; padding:2px; border-left:1px solid var(--border-color); background:var(--card-bg);">
+                            <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
+                            <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
+                        </div>
+                    </div>`;
+                } else {
+                    html += `
+                    <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden; cursor:pointer;" title="클릭하여 수량 수정">
+                        <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
+                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden; text-align:left;">
+                            <b style="font-size:11px; line-height:1.2;">${code}</b>
+                            <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${count.toLocaleString()}개</span>
+                        </div>
+                    </div>`;
+                }
             }
         });
         html += `</div></details>`;
