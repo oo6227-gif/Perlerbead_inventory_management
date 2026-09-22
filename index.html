@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.30</title>
+<title>비즈 사용량 관리 v1.0.31</title>
 
 <!-- 파이어베이스 SDK 설정 -->
 <script type="module">
@@ -355,6 +355,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     <div class="drawer-item" onclick="openMainCategory('stock'); toggleDrawer(false);">📦 재고/입고 관리</div>
     <div class="drawer-sub-item" onclick="openSubMenuStock('stock', 'inventorySub'); toggleDrawer(false);">└ 사용 가능한 재고</div>
     <div class="drawer-sub-item" onclick="openSubMenuStock('stock', 'unopenedSub'); toggleDrawer(false);">└ 보충 가능 재고</div>
+    <div class="drawer-sub-item" onclick="openSubMenuStock('stock', 'incomingSub'); toggleDrawer(false);">└ 입고 예정 재고</div>
     <div class="drawer-sub-item" onclick="openSubMenuStock('stock', 'restockSub'); toggleDrawer(false);">└ 입고 관리</div>
 
     <div class="drawer-item" onclick="openMainCategory('settings'); toggleDrawer(false);">⚙️ 설정</div>
@@ -550,6 +551,26 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         </div>
     </div>
 
+    <div id="incomingSub" class="stockPage">
+        <div class="card">
+            <h3>입고 예정 재고 등록</h3>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
+                ※ 주문한 비즈와 중량(G), 주문 날짜를 적어주세요.
+            </div>
+            <div style="margin-bottom:8px;">
+                <label style="font-size:11px; font-weight:bold; color:var(--text-secondary);">주문 날짜</label>
+                <input type="date" id="incomingDate" style="padding:8px; font-size:13px;">
+            </div>
+            <textarea id="incomingText" rows="5" placeholder="A1 100G&#10;B2 200G" style="font-size: 13px;"></textarea>
+            <button onclick="registerIncomingInventory()">입고 예정 등록</button>
+        </div>
+        <div class="card">
+            <h3>입고 예정 재고 현황</h3>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">💡 택배 도착 시 버튼을 누르면 보충 가능 재고로 일괄 이동됩니다.</div>
+            <div id="incomingInventoryList"></div>
+        </div>
+    </div>
+
     <div id="restockSub" class="stockPage">
         <div class="card">
             <h3>입고 등록</h3>
@@ -607,6 +628,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <h4 style="font-size:13px; margin:0 0 8px 0; color:var(--text-color);">재고 카테고리 메뉴 온오프 설정</h4>
         <div style="display:flex; flex-direction:column; gap:6px; font-size:12px;">
             <label><input type="checkbox" id="catUnopened" style="width:auto;" checked> 보충 가능 재고</label>
+            <label><input type="checkbox" id="catIncoming" style="width:auto;" checked> 입고 예정 재고</label>
         </div>
     </div>
 
@@ -720,10 +742,13 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.30 업데이트 내용]</b>
+            <b>[v1.0.31 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>도안 제작 시 재고 확인 결과 간소화 (제작 가능 시 한 줄 문구만, 부족 시 부족한 색상 목록만 표시)</li>
-                <li>보충 가능 및 사용 가능한 재고 현황 카드 디자인 개편 (좌측 큰 색상 박스, 가운데 코드 및 중량/개수 세로 정렬, 우측 무색 가위/박스 세로 정렬)</li>
+                <li>월별 사용량 '기타 사용 색상' 영역 삭제 및 H1, H2, H7, E11 제외된 TOP 10 안내 문구 추가</li>
+                <li>사용 가능 및 보충 가능 재고 현황 카드를 1줄에 5개씩 표현되도록 촘촘하게 개편 (사용 가능은 수량 위주, 보충 가능은 G 위주)</li>
+                <li>'입고 예정 재고' 메뉴 부활 (주문날짜별 그룹 관리 및 택배 도착 시 보충 가능 재고로 일괄 이동)</li>
+                <li>설정 내 입고 예정 재고 온오프 기능 추가</li>
+                <li>재고 부족 알림에 (사용 가능 + 보충 가능 + 입고 예정) 총량 반영</li>
             </ul>
         </div>
     </div>
@@ -764,19 +789,21 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.30";
+const APP_VERSION = "v1.0.31";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
 let restocks = JSON.parse(localStorage.getItem("restocks")) || [];
 let currentInventory = JSON.parse(localStorage.getItem("currentInventory")) || {};
 let unopenedInventory = JSON.parse(localStorage.getItem("unopenedInventory")) || {};
+let incomingInventory = JSON.parse(localStorage.getItem("incomingInventory")) || [];
 
 let settings = JSON.parse(localStorage.getItem("appSettings")) || {
     themeMode: 'system',
     lowStockThreshold: 300,
     transferUnit: 10,
     catUnopened: true,
+    catIncoming: true,
     customThresholds: {}
 };
 
@@ -912,11 +939,12 @@ function saveAll(){
     localStorage.setItem("restocks", JSON.stringify(restocks));
     localStorage.setItem("currentInventory", JSON.stringify(currentInventory));
     localStorage.setItem("unopenedInventory", JSON.stringify(unopenedInventory));
+    localStorage.setItem("incomingInventory", JSON.stringify(incomingInventory));
     localStorage.setItem("appSettings", JSON.stringify(settings));
 }
 
 function exportData(){
-    let data = { designs, productions, restocks, currentInventory, unopenedInventory, settings };
+    let data = { designs, productions, restocks, currentInventory, unopenedInventory, incomingInventory, settings };
     let blob = new Blob([JSON.stringify(data, null, 2)], {type: "application/json"});
     let url = URL.createObjectURL(blob);
     let a = document.createElement("a");
@@ -989,6 +1017,7 @@ async function uploadCloudBackup() {
         restocks: JSON.parse(localStorage.getItem("restocks")) || [],
         currentInventory: JSON.parse(localStorage.getItem("currentInventory")) || {},
         unopenedInventory: JSON.parse(localStorage.getItem("unopenedInventory")) || {},
+        incomingInventory: JSON.parse(localStorage.getItem("incomingInventory")) || [],
         settings: JSON.parse(localStorage.getItem("appSettings")) || {},
         updatedAt: new Date().toISOString(),
         expiresAt: expiresAt
@@ -1079,6 +1108,9 @@ function processImportData(data, isMerge) {
                 unopenedInventory[code] = Math.max(unopenedInventory[code] || 0, data.unopenedInventory[code]);
             });
         }
+        if(data.incomingInventory) {
+            incomingInventory = [...incomingInventory, ...data.incomingInventory];
+        }
         if(data.productions) {
             let prodMap = new Map();
             productions.forEach(p => prodMap.set(p.id, p));
@@ -1109,6 +1141,7 @@ function processImportData(data, isMerge) {
         if(data.restocks) localStorage.setItem("restocks", JSON.stringify(data.restocks));
         if(data.currentInventory) localStorage.setItem("currentInventory", JSON.stringify(data.currentInventory));
         if(data.unopenedInventory) localStorage.setItem("unopenedInventory", JSON.stringify(data.unopenedInventory));
+        if(data.incomingInventory) localStorage.setItem("incomingInventory", JSON.stringify(data.incomingInventory));
         if(data.settings) localStorage.setItem("appSettings", JSON.stringify(data.settings));
 
         alertCustom("성공", "기존 데이터가 교체되었습니다! 확인을 누르면 앱이 새로고침됩니다.");
@@ -1203,6 +1236,7 @@ function loadSettingsToUI(){
     document.getElementById("settingTransferUnit").value = settings.transferUnit;
     document.getElementById("lblTransferUnit").innerText = settings.transferUnit;
     document.getElementById("catUnopened").checked = settings.catUnopened;
+    document.getElementById("catIncoming").checked = settings.catIncoming;
     updateThemeSetting();
     updateStockTabsVisibility();
     renderCustomThresholds();
@@ -1213,6 +1247,7 @@ function saveSettings(){
     settings.lowStockThreshold = Number(document.getElementById("settingLowStockThreshold").value);
     settings.transferUnit = Number(document.getElementById("settingTransferUnit").value);
     settings.catUnopened = document.getElementById("catUnopened").checked;
+    settings.catIncoming = document.getElementById("catIncoming").checked;
     saveAll();
     updateThemeSetting();
     updateStockTabsVisibility();
@@ -1223,6 +1258,7 @@ function updateStockTabsVisibility(){
     let headerHtml = '';
     headerHtml += `<button class="stockTab" onclick="openStockTab(event,'inventorySub')">사용 가능한 재고</button>`;
     if(settings.catUnopened) headerHtml += `<button class="stockTab" onclick="openStockTab(event,'unopenedSub')">보충 가능 재고</button>`;
+    if(settings.catIncoming) headerHtml += `<button class="stockTab" onclick="openStockTab(event,'incomingSub')">입고 예정 재고</button>`;
     headerHtml += `<button class="stockTab" onclick="openStockTab(event,'restockSub')">입고 관리</button>`;
     document.getElementById("stockSubTabsBar").innerHTML = headerHtml;
 
@@ -1234,6 +1270,9 @@ function updateStockTabsVisibility(){
     let activeStock = document.querySelector(".stockPage.active");
     let targetSub = activeStock ? activeStock.id : 'inventorySub';
     if(!settings.catUnopened && targetSub === 'unopenedSub') {
+        targetSub = 'inventorySub';
+    }
+    if(!settings.catIncoming && targetSub === 'incomingSub') {
         targetSub = 'inventorySub';
     }
     openStockTab(null, targetSub);
@@ -1880,12 +1919,16 @@ function renderMonthlyUsage(){
     let usage = getSelectedMonthUsage();
     let total = 0;
     let sortedEntries = Object.entries(usage).sort((a,b) => b[1] - a[1]);
-    let top10 = sortedEntries.slice(0, 10);
-    let rest = sortedEntries.slice(10);
+    
+    let excludedCodes = ["H1", "H2", "H7", "E11"];
+    let top10Candidates = sortedEntries.filter(([code]) => !excludedCodes.includes(code.toUpperCase()));
+    let top10 = top10Candidates.slice(0, 10);
+    
     let html = "";
 
     if(top10.length > 0){
-        html += `<div style="font-size:13px; font-weight:bold; color:#4A5568; margin-bottom:6px;">🔥 이달의 TOP 10 사용 색상</div>`;
+        html += `<div style="font-size:13px; font-weight:bold; color:#4A5568; margin-bottom:2px;">🔥 이달의 TOP 10 사용 색상</div>`;
+        html += `<div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">(※ H1, H2, H7, E11 색상은 제외됨)[cite: 28]</div>`;
         html += `<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom:12px;">`;
         top10.forEach(([code, qty]) => {
             html += `
@@ -1896,24 +1939,11 @@ function renderMonthlyUsage(){
                 </div>
                 <div style="font-size:11px; color:var(--text-secondary); font-weight:bold;">${qty.toLocaleString()}개</div>
             </div>`;
-            total += qty;
         });
         html += `</div>`;
     }
 
-    if(rest.length > 0){
-        html += `<div style="font-size:12px; font-weight:bold; color:var(--text-secondary); margin-bottom:4px;">기타 사용 색상</div>`;
-        html += `<div style="display:flex; flex-wrap:wrap; gap:5px; margin-bottom:12px;">`;
-        rest.forEach(([code, qty]) => {
-            html += `
-            <div style="background:var(--base-gray); padding:3px 6px; border-radius:4px; border:1px solid var(--border-color); font-size:11px; display:flex; align-items:center; gap:3px;">
-                <div style="width:9px; height:9px; background:${beadColors[code] || "#ccc"}; border:1px solid #999; border-radius:2px;"></div>
-                <span><b>${code}</b>: ${qty.toLocaleString()}개</span>
-            </div>`;
-            total += qty;
-        });
-        html += `</div>`;
-    }
+    sortedEntries.forEach(([code, qty]) => { total += qty; });
 
     if(sortedEntries.length === 0){
         html = `<div style="color:var(--text-secondary); font-size:12px; text-align:center; padding:8px;">선택한 달에 사용된 비즈 내역이 없습니다.</div>`;
@@ -1945,6 +1975,38 @@ function registerUnopenedInventory(){
     alertCustom("성공", "보충 가능 재고가 등록되었습니다.");
 }
 
+function registerIncomingInventory(){
+    let dateVal = document.getElementById("incomingDate").value;
+    let text = document.getElementById("incomingText").value.trim();
+    if(!dateVal){ alertCustom("알림", "주문 날짜를 선택해주세요."); return; }
+    if(!text){ alertCustom("알림", "재고 내용을 입력해주세요."); return; }
+    let items = {};
+    text.split("\n").forEach(line => {
+        let m = line.trim().match(/^([A-Z0-9]+)\s+(\d+)\s*[gG]?$/i);
+        if(m) items[m[1].toUpperCase()] = Number(m[2]);
+    });
+    if(Object.keys(items).length === 0){ alertCustom("알림", "올바른 형식의 데이터가 없습니다."); return; }
+    incomingInventory.push({ id: Date.now(), date: dateVal, items });
+    saveAll();
+    document.getElementById("incomingText").value = "";
+    refreshAll();
+    alertCustom("성공", "입고 예정 재고가 등록되었습니다.");
+}
+
+function completeIncomingOrder(orderId){
+    confirmCustom("택배 도착 완료", "이 주문의 모든 재고를 '보충 가능 재고'로 이동하시겠습니까?", () => {
+        let order = incomingInventory.find(o => o.id === orderId);
+        if(!order) return;
+        Object.entries(order.items).forEach(([code, gram]) => {
+            unopenedInventory[code] = (unopenedInventory[code] || 0) + gram;
+        });
+        incomingInventory = incomingInventory.filter(o => o.id !== orderId);
+        saveAll();
+        refreshAll();
+        alertCustom("성공", "보충 가능 재고로 정상 이동되었습니다!");
+    });
+}
+
 function renderGroupedInventory(inventoryObj, isUnopened = false) {
     let groups = {};
     let sortedCodes = sortCodesNatural(Object.keys(beadColors));
@@ -1963,36 +2025,36 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
 
         let unit = settings.transferUnit;
         html += `
-        <details style="margin-bottom:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--card-bg); overflow:hidden;">
+        <details style="margin-bottom:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--card-bg); overflow:hidden;" open>
             <summary style="padding:10px 12px; background:var(--base-gray); font-weight:bold; cursor:pointer; color:var(--text-color); font-size:13px;">
                 ${prefix} 그룹 (${items.length}개 색상)
             </summary>
-            <div style="padding:10px; display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;">`;
+            <div style="padding:10px; display:grid; grid-template-columns:repeat(5, 1fr); gap:6px;">`;
 
         items.forEach(({code, gram}) => {
             let count = gram * 100;
             let hex = beadColors[code] || "#ccc";
             if(isUnopened) {
                 html += `
-                <div style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:8px;">
-                    <div style="width:24px; height:38px; background:${hex}; border:1px solid #999; border-radius:4px; flex-shrink:0;"></div>
-                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size:12px;">
-                        <b>${code}</b>
-                        <span style="color:var(--text-secondary); font-size:11px;">${gram}G (약 ${count.toLocaleString()}개)</span>
+                <div style="background:var(--base-gray); padding:6px 4px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center;">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:2px; margin-bottom:2px;">
+                        <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
+                        <b style="font-size:12px;">${code}</b>
                     </div>
-                    <div style="display:flex; flex-direction:column; gap:2px; align-items:center; flex-shrink:0;">
-                        <button onclick="quickTransfer('${code}', ${unit})" title="설정단위(${unit}G)만큼 원터치 이동" style="background:transparent; border:none; padding:2px; font-size:12px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
-                        <button onclick="customTransfer('${code}')" title="원하는 그람수 직접 입력" style="background:transparent; border:none; padding:2px; font-size:12px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
+                    <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">${gram}G</div>
+                    <div style="display:flex; gap:2px;">
+                        <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:11px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
+                        <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:11px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
                     </div>
                 </div>`;
             } else {
                 html += `
-                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:8px; cursor:pointer;" title="클릭하여 수량 수정">
-                    <div style="width:24px; height:38px; background:${hex}; border:1px solid #999; border-radius:4px; flex-shrink:0;"></div>
-                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size:12px;">
-                        <b>${code}</b>
-                        <span style="color:var(--text-secondary); font-size:11px;">${gram}G (약 ${count.toLocaleString()}개)</span>
+                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:6px 4px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; cursor:pointer;" title="클릭하여 수량 수정">
+                    <div style="display:flex; align-items:center; justify-content:center; gap:2px; margin-bottom:2px;">
+                        <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
+                        <b style="font-size:12px;">${code}</b>
                     </div>
+                    <div style="font-size:10px; color:var(--text-secondary);">${count.toLocaleString()}개</div>
                 </div>`;
             }
         });
@@ -2004,6 +2066,31 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
 
 function renderCurrentInventory(){ document.getElementById("currentInventoryList").innerHTML = renderGroupedInventory(currentInventory, false); }
 function renderUnopenedInventory(){ document.getElementById("unopenedInventoryList").innerHTML = renderGroupedInventory(unopenedInventory, true); }
+
+function renderIncomingInventory(){
+    let html = "";
+    let sortedOrders = incomingInventory.slice().sort((a,b) => new Date(b.date) - new Date(a.date));
+    sortedOrders.forEach(order => {
+        let itemsHtml = "";
+        Object.entries(order.items).forEach(([code, gram]) => {
+            let hex = beadColors[code] || "#ccc";
+            itemsHtml += `
+            <div style="background:var(--base-gray); padding:4px 6px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:6px; font-size:11px;">
+                <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
+                <b>${code}</b> : ${gram}G
+            </div>`;
+        });
+        html += `
+        <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                <span style="font-weight:bold; font-size:13px; color:var(--text-color);">📦 주문일 : ${order.date}</span>
+                <button onclick="completeIncomingOrder(${order.id})" style="width:auto; padding:6px 10px; font-size:11px; background:var(--pastel-mint); color:#2C4A3E;">택배 도착 (보충 가능 재고로 이동)</button>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px;">${itemsHtml}</div>
+        </div>`;
+    });
+    document.getElementById("incomingInventoryList").innerHTML = html || "<div style='color:var(--text-secondary); font-size:12px; padding:8px;'>입고 예정인 재고가 없습니다.</div>";
+}
 
 function editOpenInventory(code){
     let currentGram = currentInventory[code] || 0;
@@ -2044,7 +2131,11 @@ function renderAlerts(){
     Object.keys(beadColors).forEach(code => {
         let openGram = currentInventory[code] || 0;
         let unopenedGram = unopenedInventory[code] || 0;
-        let count = (openGram + unopenedGram) * 100;
+        let incomingGram = 0;
+        incomingInventory.forEach(order => {
+            if(order.items && order.items[code]) incomingGram += order.items[code];
+        });
+        let count = (openGram + unopenedGram + incomingGram) * 100;
         let thresh = settings.customThresholds[code] !== undefined ? settings.customThresholds[code] : settings.lowStockThreshold;
         let hex = beadColors[code] || "#ccc";
         let box = `<span style="display:inline-block; width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:3px; vertical-align:middle; margin-right:4px;"></span>`;
@@ -2141,6 +2232,7 @@ function refreshAll(){
     renderRestockHistory();
     renderCurrentInventory();
     renderUnopenedInventory();
+    renderIncomingInventory();
 }
 
 window.onload = function(){
@@ -2148,6 +2240,7 @@ window.onload = function(){
     document.getElementById("currentVersion").innerText = APP_VERSION;
     let now = new Date();
     document.getElementById("usageMonthPicker").value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    document.getElementById("incomingDate").value = now.toISOString().slice(0,10);
     refreshAll();
 };
 </script>
