@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.32</title>
+<title>비즈 사용량 관리 v1.0.33</title>
 
 <!-- TTF 폰트 정의 -->
 <style>
@@ -771,10 +771,12 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.32 업데이트 내용]</b>
+            <b>[v1.0.33 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>깃허브에 추가된 TTF 폰트(묘은 또박체, 묘은 흘림체) 연동 적용</li>
-                <li>설정 화면 내 '화면 폰트 설정' 드롭박스 추가 (시스템 설정에 따라 / 묘은 또박체 / 묘은 흘림체 선택 가능)</li>
+                <li>월별 사용량 TOP 10 안내 문구 정리 및 불필요한 텍스트 삭제</li>
+                <li>사용 가능 및 보충 가능 재고 그룹 기본 닫힘 처리</li>
+                <li>재고 카드 레이아웃 개편 (좌측 세로 가득 찬 색상 도형, 중간 코드 및 수량/중량 세로 정렬, 우측 가위/박스 세로 정렬)</li>
+                <li>입고 예정 재고 '택배 도착' 버튼 텍스트 간소화</li>
             </ul>
         </div>
     </div>
@@ -815,7 +817,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.32";
+const APP_VERSION = "v1.0.33";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -1975,8 +1977,7 @@ function renderMonthlyUsage(){
     let html = "";
 
     if(top10.length > 0){
-        html += `<div style="font-size:13px; font-weight:bold; color:#4A5568; margin-bottom:2px;">🔥 이달의 TOP 10 사용 색상</div>`;
-        html += `<div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">(※ H1, H2, H7, E11 색상은 제외됨)[cite: 28]</div>`;
+        html += `<div style="font-size:13px; font-weight:bold; color:#4A5568; margin-bottom:10px;">🔥 이달의 TOP 10 사용 색상</div>`;
         html += `<div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-bottom:12px;">`;
         top10.forEach(([code, qty]) => {
             html += `
@@ -2073,7 +2074,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
 
         let unit = settings.transferUnit;
         html += `
-        <details style="margin-bottom:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--card-bg); overflow:hidden;" open>
+        <details style="margin-bottom:8px; border:1px solid var(--border-color); border-radius:8px; background:var(--card-bg); overflow:hidden;">
             <summary style="padding:10px 12px; background:var(--base-gray); font-weight:bold; cursor:pointer; color:var(--text-color); font-size:13px;">
                 ${prefix} 그룹 (${items.length}개 색상)
             </summary>
@@ -2084,25 +2085,25 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
             let hex = beadColors[code] || "#ccc";
             if(isUnopened) {
                 html += `
-                <div style="background:var(--base-gray); padding:6px 4px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center;">
-                    <div style="display:flex; align-items:center; justify-content:center; gap:2px; margin-bottom:2px;">
-                        <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
-                        <b style="font-size:12px;">${code}</b>
+                <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden;">
+                    <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden;">
+                        <b style="font-size:11px; line-height:1.2;">${code}</b>
+                        <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram}G</span>
                     </div>
-                    <div style="font-size:10px; color:var(--text-secondary); margin-bottom:4px;">${gram}G</div>
-                    <div style="display:flex; gap:2px;">
-                        <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:11px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
-                        <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:11px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
+                    <div style="display:flex; flex-direction:column; justify-content:center; gap:2px; padding:2px; border-left:1px solid var(--border-color); background:var(--card-bg);">
+                        <button onclick="quickTransfer('${code}', ${unit})" title="원터치 이동" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
+                        <button onclick="customTransfer('${code}')" title="직접 입력" style="background:transparent; border:none; padding:1px; font-size:10px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
                     </div>
                 </div>`;
             } else {
                 html += `
-                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:6px 4px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; cursor:pointer;" title="클릭하여 수량 수정">
-                    <div style="display:flex; align-items:center; justify-content:center; gap:2px; margin-bottom:2px;">
-                        <div style="width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:2px;"></div>
-                        <b style="font-size:12px;">${code}</b>
+                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden; cursor:pointer;" title="클릭하여 수량 수정">
+                    <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden; text-align:left;">
+                        <b style="font-size:11px; line-height:1.2;">${code}</b>
+                        <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${count.toLocaleString()}개</span>
                     </div>
-                    <div style="font-size:10px; color:var(--text-secondary);">${count.toLocaleString()}개</div>
                 </div>`;
             }
         });
@@ -2132,7 +2133,7 @@ function renderIncomingInventory(){
         <div style="background:var(--card-bg); border:1px solid var(--border-color); border-radius:8px; padding:12px; margin-bottom:10px;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
                 <span style="font-weight:bold; font-size:13px; color:var(--text-color);">📦 주문일 : ${order.date}</span>
-                <button onclick="completeIncomingOrder(${order.id})" style="width:auto; padding:6px 10px; font-size:11px; background:var(--pastel-mint); color:#2C4A3E;">택배 도착 (보충 가능 재고로 이동)</button>
+                <button onclick="completeIncomingOrder(${order.id})" style="width:auto; padding:6px 10px; font-size:11px; background:var(--pastel-mint); color:#2C4A3E;">택배 도착</button>
             </div>
             <div style="display:flex; flex-wrap:wrap; gap:6px;">${itemsHtml}</div>
         </div>`;
