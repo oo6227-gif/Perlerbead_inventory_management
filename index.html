@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.0.27</title>
+<title>비즈 사용량 관리 v1.0.30</title>
 
 <!-- 파이어베이스 SDK 설정 -->
 <script type="module">
@@ -400,8 +400,8 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <h3 style="font-size:13px; color:var(--text-color); margin-bottom:6px;">클라우드 백업 및 복원 (기기 간 연동)</h3>
         <div style="font-size:11px; color:var(--text-secondary); margin-bottom:10px;">코드를 생성하여 다른 기기에서도 데이터를 그대로 불러옵니다.</div>
         <div style="display:flex; gap:8px; max-width:400px; margin:0 auto; position:relative; z-index:20;">
-            <button onclick="uploadCloudBackup()" style="flex:1; background:var(--pastel-dusty-pink); color:#4A3B45; padding:10px; border-radius:8px; font-size:12px;">코드로 클라우드 백업</button>
-            <button onclick="openCloudRestoreModal()" style="flex:1; background:var(--pastel-lavender); color:#4A3B45; padding:10px; border-radius:8px; font-size:12px;">코드로 클라우드 복원</button>
+            <button onclick="uploadCloudBackup()" style="flex:1; background:var(--pastel-dusty-pink); color:#4A3B45; padding:10px; border-radius:8px; font-size:12px;">클라우드 백업</button>
+            <button onclick="openCloudRestoreModal()" style="flex:1; background:var(--pastel-lavender); color:#4A3B45; padding:10px; border-radius:8px; font-size:12px;">클라우드 복원/병합</button>
         </div>
     </div>
 </div>
@@ -578,15 +578,15 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         </div>
 
         <div style="margin:12px 0;">
-            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">기본 재고 부족 임계값: <span id="lblLowStockThreshold">300</span>개</label>
+            <label style="font-weight:bold; font-size:12px; display:block; margin-bottom:4px;">재고 알림 기준 수량: <span id="lblLowStockThreshold">300</span>개</label>
             <input type="range" id="settingLowStockThreshold" min="100" max="500" step="50" value="300" oninput="document.getElementById('lblLowStockThreshold').innerText=this.value">
         </div>
 
         <hr style="margin:12px 0;">
-        <h4 style="font-size:13px; margin:0 0 8px 0; color:var(--text-color);">특정 색상코드별 개별 임계값 설정</h4>
+        <h4 style="font-size:13px; margin:0 0 8px 0; color:var(--text-color);">특정 색상코드별 개별 기준 수량 설정</h4>
         <div style="display:flex; gap:8px; margin-top:6px;">
             <input id="customColorCode" placeholder="코드 (예: H7)" style="width:30%; font-size:12px; padding:8px;">
-            <input id="customColorThresh" type="number" placeholder="임계값(개)" style="width:50%; font-size:12px; padding:8px;">
+            <input id="customColorThresh" type="number" placeholder="기준 수량(개)" style="width:50%; font-size:12px; padding:8px;">
             <button onclick="addCustomThreshold()" style="width:20%; padding:8px; font-size:12px; background:var(--pastel-mint); color:#2C4A3E;">추가</button>
         </div>
         <div id="customThresholdList" style="margin-top:8px; font-size:12px;"></div>
@@ -636,7 +636,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 <!-- 커스텀 클라우드 복원 코드 입력 모달 -->
 <div id="cloudRestoreModal" class="modal">
     <div class="modal-content">
-        <h3 style="margin-top:0; font-size:16px;">코드로 클라우드 복원</h3>
+        <h3 style="margin-top:0; font-size:16px;">클라우드 복원 / 병합</h3>
         <p style="font-size:12px; color:var(--text-secondary);">발급받은 6자리 백업 코드를 입력하세요.</p>
         <input id="cloudInputCode" placeholder="예: A7K9X2" style="text-transform:uppercase; text-align:center; font-size:16px; letter-spacing:2px; margin:8px 0;">
         <div style="display:flex; gap:8px; margin-top:12px;">
@@ -720,13 +720,10 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.0.27 업데이트 내용]</b>
+            <b>[v1.0.30 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>사이드 메뉴(드롭 메뉴)에 하위 카테고리(도안 관리, 등록, 이력, 대체색상, 재고 및 입고 관리 서브탭 등)를 트리 구조로 추가하여 빠른 이동 지원</li>
-            </ul>
-            <b>[v1.0.26 업데이트 내용]</b>
-            <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>카드 제목 및 전반적인 텍스트 크기를 컴팩트하게 정돈</li>
+                <li>도안 제작 시 재고 확인 결과 간소화 (제작 가능 시 한 줄 문구만, 부족 시 부족한 색상 목록만 표시)</li>
+                <li>보충 가능 및 사용 가능한 재고 현황 카드 디자인 개편 (좌측 큰 색상 박스, 가운데 코드 및 중량/개수 세로 정렬, 우측 무색 가위/박스 세로 정렬)</li>
             </ul>
         </div>
     </div>
@@ -748,7 +745,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <p id="customConfirmMessage" style="font-size:13px; color:var(--text-color); margin:12px 0; white-space:pre-line;"></p>
         <div style="display:flex; gap:8px; margin-top:12px;">
             <button id="customConfirmYesBtn" style="flex:1; background:var(--pastel-powder-blue); color:#2C3748; font-size:13px; padding:10px;">확인</button>
-            <button onclick="closeCustomConfirm()" style="flex:1; background:#ccc; color:#333; font-size:13px; padding:10px;">취소</button>
+            <button id="customConfirmNoBtn" style="flex:1; background:#ccc; color:#333; font-size:13px; padding:10px;">취소</button>
         </div>
     </div>
 </div>
@@ -767,7 +764,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.0.27";
+const APP_VERSION = "v1.0.30";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -787,6 +784,7 @@ let selectedDesignForProd = null;
 let editingProductionId = null;
 let currentDetailDesignId = null;
 let pendingConfirmCallback = null;
+let pendingCancelCallback = null;
 let pendingPromptCallback = null;
 
 let substituteData = `
@@ -937,18 +935,24 @@ function closeCustomAlert() {
     document.getElementById("customAlertModal").style.display = "none";
 }
 
-function confirmCustom(title, message, callback) {
+function confirmCustom(title, message, callback, cancelCallback) {
     document.getElementById("customConfirmTitle").innerText = title;
     document.getElementById("customConfirmMessage").innerText = message;
     pendingConfirmCallback = callback;
+    pendingCancelCallback = cancelCallback || null;
     document.getElementById("customConfirmModal").style.display = "flex";
 }
 function closeCustomConfirm() {
     document.getElementById("customConfirmModal").style.display = "none";
     pendingConfirmCallback = null;
+    pendingCancelCallback = null;
 }
 document.getElementById("customConfirmYesBtn").onclick = function() {
     if(pendingConfirmCallback) pendingConfirmCallback();
+    closeCustomConfirm();
+};
+document.getElementById("customConfirmNoBtn").onclick = function() {
+    if(pendingCancelCallback) pendingCancelCallback();
     closeCustomConfirm();
 };
 
@@ -1049,6 +1053,69 @@ function closeCloudRestoreModal() {
     document.getElementById("cloudRestoreModal").style.display = "none";
 }
 
+function processImportData(data, isMerge) {
+    if(isMerge) {
+        if(data.designs) {
+            let designMap = new Map();
+            designs.forEach(d => designMap.set(d.name.trim().toLowerCase(), d));
+            data.designs.forEach(d => {
+                let key = d.name.trim().toLowerCase();
+                if(designMap.has(key)) {
+                    let existing = designMap.get(key);
+                    if((d.id || 0) > (existing.id || 0)) designMap.set(key, d);
+                } else {
+                    designMap.set(key, d);
+                }
+            });
+            designs = Array.from(designMap.values());
+        }
+        if(data.currentInventory) {
+            Object.keys(data.currentInventory).forEach(code => {
+                currentInventory[code] = Math.max(currentInventory[code] || 0, data.currentInventory[code]);
+            });
+        }
+        if(data.unopenedInventory) {
+            Object.keys(data.unopenedInventory).forEach(code => {
+                unopenedInventory[code] = Math.max(unopenedInventory[code] || 0, data.unopenedInventory[code]);
+            });
+        }
+        if(data.productions) {
+            let prodMap = new Map();
+            productions.forEach(p => prodMap.set(p.id, p));
+            data.productions.forEach(p => prodMap.set(p.id, p));
+            productions = Array.from(prodMap.values());
+        }
+        if(data.restocks) {
+            let restockSet = new Set();
+            let mergedRestocks = [];
+            [...restocks, ...data.restocks].forEach(r => {
+                let sig = `${r.date}_${r.code}_${r.gram}_${r.type}`;
+                if(!restockSet.has(sig)) {
+                    restockSet.add(sig);
+                    mergedRestocks.push(r);
+                }
+            });
+            restocks = mergedRestocks;
+        }
+        if(data.settings) {
+            settings = Object.assign({}, settings, data.settings);
+        }
+        saveAll();
+        refreshAll();
+        alertCustom("성공", "데이터가 성공적으로 병합되었습니다!");
+    } else {
+        if(data.designs) localStorage.setItem("designs", JSON.stringify(data.designs));
+        if(data.productions) localStorage.setItem("productions", JSON.stringify(data.productions));
+        if(data.restocks) localStorage.setItem("restocks", JSON.stringify(data.restocks));
+        if(data.currentInventory) localStorage.setItem("currentInventory", JSON.stringify(data.currentInventory));
+        if(data.unopenedInventory) localStorage.setItem("unopenedInventory", JSON.stringify(data.unopenedInventory));
+        if(data.settings) localStorage.setItem("appSettings", JSON.stringify(data.settings));
+
+        alertCustom("성공", "기존 데이터가 교체되었습니다! 확인을 누르면 앱이 새로고침됩니다.");
+        setTimeout(() => location.reload(), 1500);
+    }
+}
+
 async function confirmCloudRestore() {
     if (!window.fbDB) {
         alertCustom("오류", "Firebase가 연결되지 않았습니다.");
@@ -1073,17 +1140,13 @@ async function confirmCloudRestore() {
             return;
         }
 
-        confirmCustom("클라우드 복원", "해당 클라우드 백업 데이터로 기기의 데이터를 교체하시겠습니까?", () => {
-            if(data.designs) localStorage.setItem("designs", JSON.stringify(data.designs));
-            if(data.productions) localStorage.setItem("productions", JSON.stringify(data.productions));
-            if(data.restocks) localStorage.setItem("restocks", JSON.stringify(data.restocks));
-            if(data.currentInventory) localStorage.setItem("currentInventory", JSON.stringify(data.currentInventory));
-            if(data.unopenedInventory) localStorage.setItem("unopenedInventory", JSON.stringify(data.unopenedInventory));
-            if(data.settings) localStorage.setItem("appSettings", JSON.stringify(data.settings));
-
-            alertCustom("성공", "성공적으로 복원되었습니다! 확인을 누르면 앱이 새로고침됩니다.");
-            setTimeout(() => location.reload(), 1500);
-        });
+        closeCloudRestoreModal();
+        confirmCustom(
+            "클라우드 복원 / 병합", 
+            "클라우드 데이터를 어떻게 처리하시겠습니까?\n\n[확인] : 기존 데이터와 병합하기\n[취소] : 기존 데이터를 교체하기", 
+            () => processImportData(data, true),   
+            () => processImportData(data, false)   
+        );
     } catch (error) {
         console.error(error);
         alertCustom("클라우드 복원 오류", error.message);
@@ -1098,53 +1161,12 @@ function importData(event){
     reader.onload = function(e){
         try {
             let data = JSON.parse(e.target.result);
-            confirmCustom("데이터 복원/병합", "데이터를 어떻게 처리하시겠습니까?\n\n[확인] : 기존 데이터와 병합하기\n[취소] : 기존 데이터를 교체하기", () => {
-                if(data.designs) {
-                    let designMap = new Map();
-                    designs.forEach(d => designMap.set(d.name.trim().toLowerCase(), d));
-                    data.designs.forEach(d => {
-                        let key = d.name.trim().toLowerCase();
-                        if(designMap.has(key)) {
-                            let existing = designMap.get(key);
-                            if((d.id || 0) > (existing.id || 0)) designMap.set(key, d);
-                        } else {
-                            designMap.set(key, d);
-                        }
-                    });
-                    designs = Array.from(designMap.values());
-                }
-                if(data.currentInventory) {
-                    Object.keys(data.currentInventory).forEach(code => {
-                        currentInventory[code] = Math.max(currentInventory[code] || 0, data.currentInventory[code]);
-                    });
-                }
-                if(data.unopenedInventory) {
-                    Object.keys(data.unopenedInventory).forEach(code => {
-                        unopenedInventory[code] = Math.max(unopenedInventory[code] || 0, data.unopenedInventory[code]);
-                    });
-                }
-                if(data.productions) {
-                    let prodMap = new Map();
-                    productions.forEach(p => prodMap.set(p.id, p));
-                    data.productions.forEach(p => prodMap.set(p.id, p));
-                    productions = Array.from(prodMap.values());
-                }
-                if(data.restocks) {
-                    let restockSet = new Set();
-                    let mergedRestocks = [];
-                    [...restocks, ...data.restocks].forEach(r => {
-                        let sig = `${r.date}_${r.code}_${r.gram}_${r.type}`;
-                        if(!restockSet.has(sig)) {
-                            restockSet.add(sig);
-                            mergedRestocks.push(r);
-                        }
-                    });
-                    restocks = mergedRestocks;
-                }
-                saveAll();
-                refreshAll();
-                alertCustom("성공", "데이터가 성공적으로 병합되었습니다!");
-            });
+            confirmCustom(
+                "데이터 복원 / 병합", 
+                "데이터를 어떻게 처리하시겠습니까?\n\n[확인] : 기존 데이터와 병합하기\n[취소] : 기존 데이터를 교체하기", 
+                () => processImportData(data, true),   
+                () => processImportData(data, false)   
+            );
         } catch(err) {
             console.error(err);
             alertCustom("오류", "올바른 백업 파일이 아닙니다.");
@@ -1654,14 +1676,13 @@ function updateProductionStockCheck(){
     let useSub = document.getElementById("modalUseSubstitute").checked;
     let manualMap = getManualSubstituteMap();
     let missingList = [];
-    let stockDetailsHtml = "";
     
     selectedDesignForProd.colors.forEach(c => {
         let requiredGram = Math.ceil(c.qty / 100);
         let availableGram = currentInventory[c.code] || 0;
         
         if(availableGram >= requiredGram){
-            stockDetailsHtml += `<div style="font-size:11px; margin-bottom:4px; color:#16a34a;">✔ ${c.code} : 보유 ${availableGram}G (필요 ${requiredGram}G) - 충분</div>`;
+            // sufficient
         } else {
             let deficitGram = requiredGram - availableGram;
             let deficitCount = deficitGram * 100;
@@ -1685,19 +1706,23 @@ function updateProductionStockCheck(){
             }
 
             if(effectiveAlt){
-                stockDetailsHtml += `<div style="font-size:11px; margin-bottom:4px; color:#2563eb;">🔄 ${c.code} 부족(${deficitGram}G) → 대체 색상 [${effectiveAlt}]로 커버 가능</div>`;
+                // covered by substitute
             } else {
                 missingList.push({ code: c.code, count: deficitCount });
-                stockDetailsHtml += `<div style="font-size:11px; margin-bottom:4px; color:red;">✖ ${c.code} : 보유 ${availableGram}G (필요 ${requiredGram}G) - 약 ${deficitCount.toLocaleString()}개 부족</div>`;
             }
         }
     });
 
     let resHtml = "";
     if(missingList.length === 0){
-        resHtml = `<span class="success">✔ 현재 재고(또는 대체 색상)로 충분히 제작 가능합니다!</span><br><div style="margin-top:6px;">${stockDetailsHtml}</div>`;
+        resHtml = `<span class="success">✔ 현재 재고(또는 대체 색상)로 충분히 제작 가능합니다!</span>`;
     } else {
-        resHtml = `<span class="danger">✖ 재고가 부족하여 제작할 수 없습니다.</span><br><div style="margin-top:6px;">${stockDetailsHtml}</div>`;
+        let missingHtml = "";
+        missingList.forEach(m => {
+            let hex = beadColors[m.code] || "#ccc";
+            missingHtml += `<div style="font-size:12px; margin-top:4px; display:flex; align-items:center; gap:6px;"><div style="width:12px; height:12px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div><b>${m.code}</b> : 약 ${m.count.toLocaleString()}개 부족</div>`;
+        });
+        resHtml = `<span class="danger">✖ 재고가 부족하여 제작할 수 없습니다.</span><div style="margin-top:6px;">${missingHtml}</div>`;
     }
     document.getElementById("modalStockCheckResult").innerHTML = resHtml;
 }
@@ -1942,29 +1967,32 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
             <summary style="padding:10px 12px; background:var(--base-gray); font-weight:bold; cursor:pointer; color:var(--text-color); font-size:13px;">
                 ${prefix} 그룹 (${items.length}개 색상)
             </summary>
-            <div style="padding:10px; display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:6px;">`;
+            <div style="padding:10px; display:grid; grid-template-columns:repeat(auto-fill, minmax(160px, 1fr)); gap:8px;">`;
 
         items.forEach(({code, gram}) => {
             let count = gram * 100;
             let hex = beadColors[code] || "#ccc";
             if(isUnopened) {
                 html += `
-                <div style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; gap:4px;">
-                    <div style="display:flex; align-items:center; gap:6px;">
-                        <div style="width:12px; height:12px; background:${hex}; border:1px solid #999; border-radius:3px;"></div>
-                        <b style="font-size:12px;">${code} : ${gram}G</b>
+                <div style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:8px;">
+                    <div style="width:24px; height:38px; background:${hex}; border:1px solid #999; border-radius:4px; flex-shrink:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size:12px;">
+                        <b>${code}</b>
+                        <span style="color:var(--text-secondary); font-size:11px;">${gram}G (약 ${count.toLocaleString()}개)</span>
                     </div>
-                    <div style="font-size:11px; color:var(--text-secondary);">약 ${count.toLocaleString()}개</div>
-                    <div style="display:flex; gap:4px; margin-top:2px;">
-                        <button onclick="quickTransfer('${code}', ${unit})" title="설정단위(${unit}G)만큼 원터치 이동" style="padding:4px; font-size:12px; flex:1; background:var(--pastel-powder-blue); color:#2C3748;">✂️</button>
-                        <button onclick="customTransfer('${code}')" title="원하는 그람수 직접 입력" style="padding:4px; font-size:12px; flex:1; background:var(--pastel-dusty-pink); color:#4A3B45;">📦</button>
+                    <div style="display:flex; flex-direction:column; gap:2px; align-items:center; flex-shrink:0;">
+                        <button onclick="quickTransfer('${code}', ${unit})" title="설정단위(${unit}G)만큼 원터치 이동" style="background:transparent; border:none; padding:2px; font-size:12px; cursor:pointer; width:auto; margin:0;" aria-label="가위">✂️</button>
+                        <button onclick="customTransfer('${code}')" title="원하는 그람수 직접 입력" style="background:transparent; border:none; padding:2px; font-size:12px; cursor:pointer; width:auto; margin:0;" aria-label="박스">📦</button>
                     </div>
                 </div>`;
             } else {
                 html += `
-                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:6px; cursor:pointer;" title="클릭하여 수량 수정">
-                    <div style="width:14px; height:14px; background:${hex}; border:1px solid #999; border-radius:3px; flex-shrink:0;"></div>
-                    <div style="font-size:11px; overflow:hidden;"><b>${code}</b> : ${gram}G<br><span style="color:var(--text-secondary);">약 ${count.toLocaleString()}개</span></div>
+                <div onclick="editOpenInventory('${code}')" style="background:var(--base-gray); padding:6px 8px; border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:center; gap:8px; cursor:pointer;" title="클릭하여 수량 수정">
+                    <div style="width:24px; height:38px; background:${hex}; border:1px solid #999; border-radius:4px; flex-shrink:0;"></div>
+                    <div style="flex:1; display:flex; flex-direction:column; justify-content:center; overflow:hidden; font-size:12px;">
+                        <b>${code}</b>
+                        <span style="color:var(--text-secondary); font-size:11px;">${gram}G (약 ${count.toLocaleString()}개)</span>
+                    </div>
                 </div>`;
             }
         });
@@ -2021,9 +2049,9 @@ function renderAlerts(){
         let hex = beadColors[code] || "#ccc";
         let box = `<span style="display:inline-block; width:10px; height:10px; background:${hex}; border:1px solid #999; border-radius:3px; vertical-align:middle; margin-right:4px;"></span>`;
 
-        if(count < thresh){
+        if(count <= thresh){
             dangerItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
-        } else if(count < thresh * 1.5){
+        } else if(count <= thresh + 100){
             warningItems.push(`<div style="display:flex; align-items:center; margin-bottom:3px; font-size:12px;">${box}<b>${code}</b>: 약 ${count.toLocaleString()}개 남음</div>`);
         }
     });
@@ -2049,7 +2077,7 @@ function renderAlerts(){
 function addCustomThreshold(){
     let code = document.getElementById("customColorCode").value.trim().toUpperCase();
     let val = Number(document.getElementById("customColorThresh").value);
-    if(!code || isNaN(val)){ alertCustom("알림", "올바른 코드와 임계값을 입력하세요."); return; }
+    if(!code || isNaN(val)){ alertCustom("알림", "올바른 코드와 기준 수량을 입력하세요."); return; }
     settings.customThresholds[code] = val;
     document.getElementById("customColorCode").value = "";
     document.getElementById("customColorThresh").value = "";
@@ -2061,7 +2089,7 @@ function renderCustomThresholds(){
     Object.entries(settings.customThresholds).forEach(([code, val]) => {
         html += `<div style="display:flex; justify-content:space-between; padding:3px 0; font-size:12px;"><span><b>${code}</b> : ${val}개 기준</span><button onclick="deleteCustomThresh('${code}')" style="width:auto; padding:2px 5px; font-size:10px; background:#ffcccc; color:red;">삭제</button></div>`;
     });
-    document.getElementById("customThresholdList").innerHTML = html || "설정된 개별 임계값이 없습니다.";
+    document.getElementById("customThresholdList").innerHTML = html || "설정된 개별 기준 수량이 없습니다.";
 }
 function deleteCustomThresh(code){ delete settings.customThresholds[code]; saveAll(); renderCustomThresholds(); }
 
