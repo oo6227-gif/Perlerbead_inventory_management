@@ -1940,5 +1940,16 @@ window.onload = function(){
     refreshAll();
 };
 </script>
+
+<!-- 공통 커스텀 알림 모달 (주소창 숨김용) -->
+<div id="customAlertModal" class="modal">
+    <div class="modal-content" style="text-align:center;">
+        <h3 id="customAlertTitle" style="margin-top:0;">알림</h3>
+        <p id="customAlertMessage" style="font-size:14px; color:var(--text-color); margin:15px 0; white-space:pre-line;"></p>
+        <button onclick="closeCustomAlert()" style="width:100%;">확인</button>
+    </div>
+</div>
+
+  
 </body>
 </html>
