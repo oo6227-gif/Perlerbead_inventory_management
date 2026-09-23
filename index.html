@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>비즈 사용량 관리 v1.1.5</title>
+<title>비즈 사용량 관리 v1.1.6</title>
 
 <!-- TTF 폰트 정의 -->
 <style>
@@ -551,9 +551,9 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <div class="card">
             <h3>사용 가능한 재고 등록</h3>
             <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
-                봉지를 뜯어 바로 사용할 수 있는 비즈 중량(G)을 입력해주세요. (1G = 100개 환산)
+                봉지를 뜯어 바로 사용할 수 있는 비즈 중량(G)을 입력해주세요. (1G = 100개 환산)<br>※ 엔터 키로 바로 등록할 수 있습니다.
             </div>
-            <textarea id="inventoryText" rows="5" placeholder="A1 50G&#10;B2 120G&#10;H2 30G" style="font-size: 13px;"></textarea>
+            <textarea id="inventoryText" rows="5" placeholder="A1 50G&#10;B2 120G&#10;H2 30G" style="font-size: 13px;" onkeydown="handleInventoryKeydown(event, 'inventory')"></textarea>
             <button onclick="registerInventory()">재고 등록</button>
         </div>
     </div>
@@ -561,15 +561,15 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
     <div id="unopenedSub" class="stockPage">
         <div class="card">
             <h3>보충 가능 재고 현황</h3>
-            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">가위(✂️) 버튼은 설정된 단위만큼 원터치 이동, 박스(📦) 버튼은 직접 그람수 입력 후 이동합니다.</div>
+            <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">색상 항목을 누르면 수량 수정/삭제가 가능하며, 가위(✂️)는 원터치 이동, 박스(📦)는 직접 입력 후 이동합니다.</div>
             <div id="unopenedInventoryList"></div>
         </div>
         <div class="card">
             <h3>보충 가능 재고 등록</h3>
             <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
-                구입 후 봉지 상태로 보관 중인 비즈 중량(G)을 입력해주세요.
+                구입 후 봉지 상태로 보관 중인 비즈 중량(G)을 입력해주세요.<br>※ 엔터 키로 바로 등록할 수 있습니다.
             </div>
-            <textarea id="unopenedText" rows="5" placeholder="A1 100G&#10;B2 200G" style="font-size: 13px;"></textarea>
+            <textarea id="unopenedText" rows="5" placeholder="A1 100G&#10;B2 200G" style="font-size: 13px;" onkeydown="handleInventoryKeydown(event, 'unopened')"></textarea>
             <button onclick="registerUnopenedInventory()">재고 등록</button>
         </div>
     </div>
@@ -578,13 +578,13 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <div class="card">
             <h3>입고 예정 재고 등록</h3>
             <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
-                주문한 비즈와 중량(G), 주문 날짜를 입력해주세요.
+                주문한 비즈와 중량(G), 주문 날짜를 입력해주세요.<br>※ 텍스트 영역에서 엔터 키로 바로 등록할 수 있습니다.
             </div>
             <div style="margin-bottom:8px;">
                 <label style="font-size:11px; font-weight:bold; color:var(--text-secondary);">주문 날짜</label>
                 <input type="date" id="incomingDate" style="padding:8px; font-size:13px;">
             </div>
-            <textarea id="incomingText" rows="5" placeholder="A1 100G&#10;B2 200G" style="font-size: 13px;"></textarea>
+            <textarea id="incomingText" rows="5" placeholder="A1 100G&#10;B2 200G" style="font-size: 13px;" onkeydown="handleInventoryKeydown(event, 'incoming')"></textarea>
             <button onclick="registerIncomingInventory()">입고 예정 등록</button>
         </div>
         <div class="card">
@@ -608,9 +608,9 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <div class="card">
             <h3>입고 등록</h3>
             <div style="font-size:11px; color:var(--text-secondary); margin-bottom:8px;">
-                입고할 비즈와 중량(G)을 입력해주세요.
+                입고할 비즈와 중량(G)을 입력해주세요.<br>※ 텍스트 영역에서 엔터 키로 바로 등록할 수 있습니다.
             </div>
-            <textarea id="restockText" rows="6" placeholder="A1 10G&#10;B2 50G" style="font-size: 13px;"></textarea>
+            <textarea id="restockText" rows="6" placeholder="A1 10G&#10;B2 50G" style="font-size: 13px;" onkeydown="handleInventoryKeydown(event, 'restock')"></textarea>
             <div id="restockButtonRow" style="display:flex; gap:8px; margin-top:5px;">
                 <button onclick="registerRestock('open')" style="flex:1; font-size:13px;">사용 가능한 재고</button>
                 <button id="btnRestockUnopened" onclick="registerRestock('unopened')" style="flex:1; background:var(--pastel-dusty-pink); color:#4A3B45; font-size:13px;">보충 가능 재고</button>
@@ -854,11 +854,11 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
         <hr style="margin:10px 0;">
         <h4 style="margin:5px 0 8px 0; font-size:13px; color:#4A5568;">현재 버전 : <span id="currentVersion"></span></h4>
         <div style="font-size:12px; line-height:1.5; color:var(--text-secondary);">
-            <b>[v1.1.5 업데이트 내용]</b>
+            <b>[v1.1.6 업데이트 내용]</b>
             <ul style="padding-left:16px; margin:4px 0 12px 0;">
-                <li>색상코드 입력 시 알파벳과 숫자 사이의 0 자동 생략 기능 추가 (예: h09 → h9, e04 → e4)</li>
-                <li>도안 등록, 재고 등록/입고, 대체 색상 검색 및 임시 사용 등 모든 코드 입력부에 정규화 적용</li>
-                <li>제작 예정 임시 사용 현황 비즈 개수 표기 및 스마트 재고 연동 로직 유지</li>
+                <li>보충 가능 재고 현황 내 색상 코드 클릭 시 수량 직접 수정 및 삭제(0 입력) 기능 추가</li>
+                <li>사용 가능 / 보충 가능 재고 수량 수정 시 열려 있는 아코디언(그룹) 상태가 유지되도록 개선</li>
+                <li>재고 등록 텍스트 영역에서 엔터 키 입력 시 바로 등록되도록 기능 추가 (줄바꿈은 Shift+Enter)</li>
             </ul>
         </div>
     </div>
@@ -904,7 +904,7 @@ hr { margin: 15px 0; border: 0; border-top: 1px solid var(--border-color); }
 </div>
 
 <script>
-const APP_VERSION = "v1.1.5";
+const APP_VERSION = "v1.1.6";
 
 let designs = JSON.parse(localStorage.getItem("designs")) || [];
 let productions = JSON.parse(localStorage.getItem("productions")) || [];
@@ -932,7 +932,6 @@ let pendingConfirmCallback = null;
 let pendingCancelCallback = null;
 let pendingPromptCallback = null;
 
-// 색상코드 정규화 함수: 알파벳과 숫자 사이의 0 제거 (예: h09 -> h9, e04 -> e4)
 function normalizeColorCode(code) {
     if (!code) return "";
     code = code.trim().toUpperCase();
@@ -2570,7 +2569,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
                 if (isUnopened) {
                     html += `
                     <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; flex-direction:column; padding:6px 4px; align-items:center; justify-content:space-between; height:44px; box-sizing:border-box;">
-                        <div style="display:flex; align-items:center; gap:4px; width:100%; justify-content:center;">
+                        <div onclick="editUnopenedInventory('${code}')" style="display:flex; align-items:center; gap:4px; width:100%; justify-content:center; cursor:pointer;" title="클릭하여 수량 수정">
                             <div style="width:8px; height:8px; background:${hex}; border:1px solid #999; border-radius:2px; flex-shrink:0;"></div>
                             <span style="font-size:11px; font-weight:bold; white-space:nowrap;">${code} (${gram}G)</span>
                         </div>
@@ -2592,7 +2591,7 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
                     html += `
                     <div style="background:var(--base-gray); border-radius:6px; border:1px solid var(--border-color); display:flex; align-items:stretch; overflow:hidden;">
                         <div style="background:${hex}; width:20px; flex-shrink:0;"></div>
-                        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden;">
+                        <div onclick="editUnopenedInventory('${code}')" style="flex:1; display:flex; flex-direction:column; justify-content:center; padding:6px 6px; overflow:hidden; cursor:pointer;" title="클릭하여 수량 수정">
                             <b style="font-size:11px; line-height:1.2;">${code}</b>
                             <span style="color:var(--text-secondary); font-size:10px; line-height:1.2;">${gram} G</span>
                         </div>
@@ -2619,8 +2618,46 @@ function renderGroupedInventory(inventoryObj, isUnopened = false) {
     return html;
 }
 
-function renderCurrentInventory(){ document.getElementById("currentInventoryList").innerHTML = renderGroupedInventory(currentInventory, false); }
-function renderUnopenedInventory(){ document.getElementById("unopenedInventoryList").innerHTML = renderGroupedInventory(unopenedInventory, true); }
+function getOpenGroups(containerId) {
+    let container = document.getElementById(containerId);
+    if (!container) return [];
+    let openPrefixes = [];
+    container.querySelectorAll("details").forEach(d => {
+        if (d.open) {
+            let summary = d.querySelector("summary");
+            if (summary) {
+                let prefix = summary.innerText.charAt(0);
+                openPrefixes.push(prefix);
+            }
+        }
+    });
+    return openPrefixes;
+}
+
+function restoreOpenGroups(containerId, openPrefixes) {
+    let container = document.getElementById(containerId);
+    if (!container) return;
+    container.querySelectorAll("details").forEach(d => {
+        let summary = d.querySelector("summary");
+        if (summary) {
+            let prefix = summary.innerText.charAt(0);
+            if (openPrefixes.includes(prefix)) {
+                d.open = true;
+            }
+        }
+    });
+}
+
+function renderCurrentInventory(){ 
+    let openGroups = getOpenGroups("currentInventoryList");
+    document.getElementById("currentInventoryList").innerHTML = renderGroupedInventory(currentInventory, false); 
+    restoreOpenGroups("currentInventoryList", openGroups);
+}
+function renderUnopenedInventory(){ 
+    let openGroups = getOpenGroups("unopenedInventoryList");
+    document.getElementById("unopenedInventoryList").innerHTML = renderGroupedInventory(unopenedInventory, true); 
+    restoreOpenGroups("unopenedInventoryList", openGroups);
+}
 
 function renderIncomingInventory(){
     let html = "";
@@ -2701,6 +2738,17 @@ function editOpenInventory(code){
     });
 }
 
+function editUnopenedInventory(code){
+    let currentGram = unopenedInventory[code] || 0;
+    promptCustom("보충 가능 재고 수정", `[${code}] 수정할 보충 가능 재고 용량(G) 입력 (0 입력 시 삭제):`, currentGram, function(input){
+        if(input === null || input === "") return;
+        let gram = Number(input);
+        if(isNaN(gram) || gram < 0){ alertCustom("알림", "올바른 숫자를 입력하세요."); return; }
+        if(gram === 0) delete unopenedInventory[code]; else unopenedInventory[code] = gram;
+        saveAll(); refreshAll();
+    });
+}
+
 function quickTransfer(code, amount){
     if((unopenedInventory[code] || 0) < amount){ alertCustom("알림", "보충 가능 재고가 부족합니다."); return; }
     unopenedInventory[code] -= amount;
@@ -2722,6 +2770,16 @@ function customTransfer(code){
         saveAll(); refreshAll();
         alertCustom("성공", `[${code}] ${gram} G가 사용 가능한 재고로 이동되었습니다.`);
     });
+}
+
+function handleInventoryKeydown(e, type) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (type === 'inventory') registerInventory();
+        else if (type === 'unopened') registerUnopenedInventory();
+        else if (type === 'incoming') registerIncomingInventory();
+        else if (type === 'restock') registerRestock('open');
+    }
 }
 
 function renderAlerts(){
